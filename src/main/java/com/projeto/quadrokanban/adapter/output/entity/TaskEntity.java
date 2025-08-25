@@ -1,11 +1,11 @@
-package com.projeto.quadrokanban.models;
+package com.projeto.quadrokanban.adapter.output.entity;
 
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.projeto.quadrokanban.enums.TaskStatus;
+import com.projeto.quadrokanban.core.enums.TaskStatus;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,7 +23,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "tb_tasks")
-public class Task {
+public class TaskEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,55 +49,7 @@ public class Task {
 	@ManyToOne
 	@JsonIgnoreProperties("Board")
 	@JoinColumn(name = "board_id", nullable = false)
-	private Board board;
-	
-	
-	
-	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-	public String getTitle() {
-		return title;
-	}
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
-	}
-	public void setUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
-	}
-	public TaskStatus getTaskStatus() {
-		return taskStatus;
-	}
-	public void setTaskStatus(TaskStatus taskStatus) {
-		this.taskStatus = taskStatus;
-	}
-	public Board getBoard() {
-		return board;
-	}
-	public void setBoard(Board board) {
-		this.board = board;
-	}
-	
-	
+	private BoardEntity board;
 	
 	
 }

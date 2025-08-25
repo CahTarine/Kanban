@@ -1,4 +1,4 @@
-package com.projeto.quadrokanban.controllers;
+package com.projeto.quadrokanban.adapter.input;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.projeto.quadrokanban.models.Board;
-import com.projeto.quadrokanban.models.Task;
+import com.projeto.quadrokanban.core.domain.model.Board;
+import com.projeto.quadrokanban.core.domain.model.Task;
 import com.projeto.quadrokanban.repositories.BoardRepository;
 import com.projeto.quadrokanban.repositories.TaskRepository;
 

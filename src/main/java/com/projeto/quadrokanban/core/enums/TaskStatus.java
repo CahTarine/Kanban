@@ -1,4 +1,4 @@
-package com.projeto.quadrokanban.enums;
+package com.projeto.quadrokanban.core.enums;
 
 public enum TaskStatus {
 
