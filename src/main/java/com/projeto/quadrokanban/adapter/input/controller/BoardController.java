@@ -1,4 +1,4 @@
-package com.projeto.quadrokanban.adapter.input;
+package com.projeto.quadrokanban.adapter.input.controller;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,9 +18,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.projeto.quadrokanban.adapter.output.repository.BoardRepository;
 import com.projeto.quadrokanban.core.domain.model.Board;
-
+import com.projeto.quadrokanban.core.usecase.BoardUseCase;
 
 import jakarta.validation.Valid;
 
@@ -30,38 +29,39 @@ import jakarta.validation.Valid;
 public class BoardController {
 	
 	@Autowired
-	private BoardRepository boardRepository;
+	private BoardUseCase boardUseCase;
 
 	
 	
 	@GetMapping
 	public ResponseEntity<List<Board>> getAll() {
-		return ResponseEntity.ok(boardRepository.findAll());
+		return ResponseEntity.ok(boardUseCase.getAllBoards());
 	}
+	
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Board> getById(@PathVariable Long id) {
-		Optional<Board> board = boardRepository.findById(id);
+		Optional<Board> board = boardUseCase.getById(id);
 		return board.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 	
 	@GetMapping("/name/{name}")
 	public ResponseEntity<List<Board>> getByName(@PathVariable String name){
-		return ResponseEntity.ok(boardRepository.findAllByNameContainingIgnoreCase(name));
+		return ResponseEntity.ok(boardUseCase.getByName(name));
 	}
 	
 	@PostMapping
 	public ResponseEntity<Board> post(@Valid @RequestBody Board board) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(boardRepository.save(board));
+		return ResponseEntity.status(HttpStatus.CREATED).body(boardUseCase.createdBoard(board));
 	}
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Board> put(@PathVariable Long id, @Valid @RequestBody Board board) {
-	    return boardRepository.findById(id)
+	    return boardUseCase.getById(id)
 	            .map(existingBoard -> {
 	                board.setId(id); 
-	                Board updatedBoard = boardRepository.save(board);
+	                Board updatedBoard = boardUseCase.createdBoard(board);
 	                return ResponseEntity.ok(updatedBoard);
 	            })
 	            .orElse(ResponseEntity.notFound().build());
@@ -70,12 +70,12 @@ public class BoardController {
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete (@PathVariable Long id) {
-		Optional<Board> board = boardRepository.findById(id);
+		Optional<Board> board = boardUseCase.getById(id);
 		
 		if(board.isEmpty())
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		
-		boardRepository.deleteById(id);
+		boardUseCase.deleteBoard(id);
 	}
 	
 }

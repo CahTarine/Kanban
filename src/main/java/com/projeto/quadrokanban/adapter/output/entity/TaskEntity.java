@@ -19,10 +19,15 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
 
 
 @Entity
 @Table(name = "tb_tasks")
+@Getter
+@Setter
 public class TaskEntity {
 
 	@Id
@@ -43,7 +48,7 @@ public class TaskEntity {
 	private LocalDateTime updatedAt;
 	
 	@Enumerated(EnumType.STRING)
-	private TaskStatus taskStatus = TaskStatus.TODO;
+	private TaskStatus status = TaskStatus.TODO;
 	
 	@NotNull
 	@ManyToOne

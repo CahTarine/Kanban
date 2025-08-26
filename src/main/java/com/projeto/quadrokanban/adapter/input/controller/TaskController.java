@@ -1,4 +1,4 @@
-package com.projeto.quadrokanban.adapter.input;
+package com.projeto.quadrokanban.adapter.input.controller;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,44 +20,43 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.domain.model.Task;
-import com.projeto.quadrokanban.repositories.BoardRepository;
-import com.projeto.quadrokanban.repositories.TaskRepository;
+import com.projeto.quadrokanban.core.usecase.BoardUseCase;
+import com.projeto.quadrokanban.core.usecase.TaskUseCase;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/task")
 @CrossOrigin(origins = "*", allowedHeaders = "*") //Pesquisar
 public class TaskController {
 	
-	@Autowired // pesquisar
-	private TaskRepository taskRepository;
-	
 	@Autowired
-	private BoardRepository boardRepository;
+	private TaskUseCase taskUseCase;
+	@Autowired
+	private BoardUseCase boardUseCase;
 
 	@GetMapping
 	public ResponseEntity<List<Task>> getAll() {
-		return ResponseEntity.ok(taskRepository.findAll());
+		return ResponseEntity.ok(taskUseCase.getAll());
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Task> getById(@PathVariable Long id) {
-		Optional<Task> task = taskRepository.findById(id);
+		Optional<Task> task = taskUseCase.getById(id);
 		return task.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 	
 	@GetMapping("/title/{title}")
 	public ResponseEntity<List<Task>> getByTitle(@PathVariable String title) {
-		return ResponseEntity.ok(taskRepository.findAllByTitleContainingIgnoreCase(title));
+		return ResponseEntity.ok(taskUseCase.getByTitle(title));
 	}
 	
 	@PostMapping
 	public ResponseEntity<Task> post(@Valid @RequestBody Task task){
 
 	    // Busca o Board no banco pelo ID enviado no JSON
-	    Board board = boardRepository.findById(
+	    Board board = boardUseCase.getById(
 	            task.getBoard() != null ? task.getBoard().getId() : null
 	    ).orElseThrow(() -> 
 	            new ResponseStatusException(HttpStatus.BAD_REQUEST, "Board does not exist")
@@ -66,7 +65,7 @@ public class TaskController {
 	    // Associa o Board à Task
 	    task.setBoard(board);
 
-	    Task savedTask = taskRepository.save(task);
+	    Task savedTask = taskUseCase.createdTask(task);
 
 	    return ResponseEntity.status(HttpStatus.CREATED).body(savedTask);
 	}
@@ -74,15 +73,15 @@ public class TaskController {
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Task> put(@PathVariable Long id, @Valid @RequestBody Task task) {
-		if (!taskRepository.existsById(id))
+		if (!taskUseCase.existsById(id))
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 			
-		if (!boardRepository.existsById(task.getBoard().getId()))
+		if (!boardUseCase.existsById(task.getBoard().getId()))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Board does not exist");
 			
 			
 		task.setId(id); //Para garantir que estamos atualizando a task certa;
-		Task updatedTask = taskRepository.save(task);
+		Task updatedTask = taskUseCase.createdTask(task);
 		
 		return ResponseEntity.ok(updatedTask);
 	}
@@ -90,12 +89,12 @@ public class TaskController {
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) //Define Http 204 como padrão se der tudo certo, este método não tem corpo.
 	public void delete(@PathVariable Long id) {
-		Optional<Task> task = taskRepository.findById(id);
+		Optional<Task> task = taskUseCase.getById(id);
 		
 		if (task.isEmpty()) 
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND); // Throw new = diz para o Java parar a execução normal do programa e lançar uma exceção.
 		
-		taskRepository.deleteById(id);
+		taskUseCase.deleteTask(id);
 	}
 	
 }

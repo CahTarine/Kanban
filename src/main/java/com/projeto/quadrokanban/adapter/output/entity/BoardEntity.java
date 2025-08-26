@@ -15,10 +15,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "tb_board")
+@Getter
+@Setter
 public class BoardEntity {
+
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,5 +37,7 @@ public class BoardEntity {
 	@JsonIgnoreProperties("board")
 	private List<TaskEntity> tasks = new ArrayList<>();
 
+	
+	
 	
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Board {
 	
+	private Long id;
 	private String name;
 	private List<Task> tasks = new ArrayList<>();
 	
@@ -18,6 +19,17 @@ public class Board {
 
 	public Board() {
 		super();
+	}
+
+
+	
+	public Long getId() {
+		return id;
+	}
+
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 

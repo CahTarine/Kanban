@@ -40,4 +40,9 @@ public class BoardUseCase {
 	    public void deleteBoard(Long id) {
 	        boardOutputPort.deleteById(id);
 	    }
+	    
+	    public boolean existsById(Long id) {
+	        return boardOutputPort.findById(id).isPresent();
+	    }
+
 }
