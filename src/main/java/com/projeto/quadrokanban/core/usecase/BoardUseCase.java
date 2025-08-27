@@ -3,10 +3,14 @@ package com.projeto.quadrokanban.core.usecase;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.projeto.quadrokanban.core.domain.model.Board;
+import com.projeto.quadrokanban.core.port.input.BoardInputPort;
 import com.projeto.quadrokanban.core.port.output.BoardOutputPort;
 
-public class BoardUseCase {
+@Service
+public class BoardUseCase implements BoardInputPort{
 	
 	private final BoardOutputPort boardOutputPort;
 	

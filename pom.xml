@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.5</version>
+		<version>3.3.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.projeto</groupId>
@@ -27,13 +27,11 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>17</java.version>
+	     <java.version>17</java.version>
+	     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -49,6 +47,11 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.mysql</groupId>
+		    <artifactId>mysql-connector-j</artifactId>
+		    <version>8.0.33</version> 
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -74,11 +77,27 @@
 	        <artifactId>mapstruct-processor</artifactId>
 	        <version>1.5.5.Final</version>
     	</dependency>
+    	<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+
 
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-resources-plugin</artifactId>
+			    <version>3.3.1</version>
+			    <configuration>
+			        <nonFilteredFileExtensions>
+			            <nonFilteredFileExtension>properties</nonFilteredFileExtension>
+			        </nonFilteredFileExtensions>
+			        <encoding>UTF-8</encoding>
+			    </configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

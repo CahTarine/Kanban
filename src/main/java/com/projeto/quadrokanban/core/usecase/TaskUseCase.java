@@ -3,15 +3,22 @@ package com.projeto.quadrokanban.core.usecase;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
+import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.domain.model.Task;
+import com.projeto.quadrokanban.core.port.input.TaskInputPort;
 import com.projeto.quadrokanban.core.port.output.TaskOutputPort;
 
-public class TaskUseCase {
+@Service
+public class TaskUseCase implements TaskInputPort {
 	
 	private final TaskOutputPort taskOutputPort;
+	private final BoardValidatorService boardValidatorService;
 	
-	public TaskUseCase (TaskOutputPort taskOutputPort) {
+	public TaskUseCase (TaskOutputPort taskOutputPort, BoardValidatorService boardValidatorService) {
 		this.taskOutputPort = taskOutputPort;
+		this.boardValidatorService = boardValidatorService;
 	}
 	
 	
@@ -28,15 +35,16 @@ public class TaskUseCase {
 		return taskOutputPort.findAllByTitleContainingIgnoreCase(title);
 	}
 	
-	public Task createdTask(Task task) {
-		return taskOutputPort.save(task);
-	}
-	
-	public Optional<Task> updateTask(Long id, Task task){
-		 return taskOutputPort.findById(id).map(existing -> {
-			task.setId(id);
-			return taskOutputPort.save(task);
-		 });
+	public Task updateTask(Long id, Task task) {
+		if (!taskOutputPort.findById(id).isPresent())
+		    throw new RuntimeException("Task not found");
+	    
+		Board board = boardValidatorService.validateBoardExists(task.getBoard().getId());
+		
+	    task.setId(id);
+	    task.setBoard(board);
+	    
+	    return taskOutputPort.save(task);
 	}
 	
 	public void deleteTask(Long id) {
@@ -45,6 +53,12 @@ public class TaskUseCase {
 	
 	public boolean existsById(Long id) {
 	    return taskOutputPort.findById(id).isPresent();
+	}
+	
+	 public Task createTaskWithBoard(Task task, Long id) {
+	        Board board = boardValidatorService.validateBoardExists(id);
+	        task.setBoard(board);
+	        return taskOutputPort.save(task);
 	}
 
 }

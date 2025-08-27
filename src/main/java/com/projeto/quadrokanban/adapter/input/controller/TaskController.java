@@ -3,7 +3,6 @@ package com.projeto.quadrokanban.adapter.input.controller;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,10 +17,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.domain.model.Task;
-import com.projeto.quadrokanban.core.usecase.BoardUseCase;
-import com.projeto.quadrokanban.core.usecase.TaskUseCase;
+import com.projeto.quadrokanban.core.port.input.TaskInputPort;
 
 import jakarta.validation.Valid;
 
@@ -30,71 +27,62 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*", allowedHeaders = "*") //Pesquisar
 public class TaskController {
 	
-	@Autowired
-	private TaskUseCase taskUseCase;
-	@Autowired
-	private BoardUseCase boardUseCase;
+	private TaskInputPort taskInputPort;
+	
+	public TaskController(TaskInputPort taskInputPort) {
+		this.taskInputPort = taskInputPort;
+	}
 
 	@GetMapping
 	public ResponseEntity<List<Task>> getAll() {
-		return ResponseEntity.ok(taskUseCase.getAll());
+		return ResponseEntity.ok(taskInputPort.getAll());
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Task> getById(@PathVariable Long id) {
-		Optional<Task> task = taskUseCase.getById(id);
+		Optional<Task> task = taskInputPort.getById(id);
 		return task.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 	
 	@GetMapping("/title/{title}")
 	public ResponseEntity<List<Task>> getByTitle(@PathVariable String title) {
-		return ResponseEntity.ok(taskUseCase.getByTitle(title));
+		return ResponseEntity.ok(taskInputPort.getByTitle(title));
 	}
 	
 	@PostMapping
-	public ResponseEntity<Task> post(@Valid @RequestBody Task task){
-
-	    // Busca o Board no banco pelo ID enviado no JSON
-	    Board board = boardUseCase.getById(
-	            task.getBoard() != null ? task.getBoard().getId() : null
-	    ).orElseThrow(() -> 
-	            new ResponseStatusException(HttpStatus.BAD_REQUEST, "Board does not exist")
-	    );
-
-	    // Associa o Board à Task
-	    task.setBoard(board);
-
-	    Task savedTask = taskUseCase.createdTask(task);
-
+	public ResponseEntity<Task> post(@Valid @RequestBody Task task) {
+	    Task savedTask = taskInputPort.createTaskWithBoard(task, task.getBoard().getId());
 	    return ResponseEntity.status(HttpStatus.CREATED).body(savedTask);
 	}
+
 
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Task> put(@PathVariable Long id, @Valid @RequestBody Task task) {
-		if (!taskUseCase.existsById(id))
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-			
-		if (!boardUseCase.existsById(task.getBoard().getId()))
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Board does not exist");
-			
-			
-		task.setId(id); //Para garantir que estamos atualizando a task certa;
-		Task updatedTask = taskUseCase.createdTask(task);
-		
-		return ResponseEntity.ok(updatedTask);
+	    try {
+	        Task updatedTask = taskInputPort.updateTask(id, task);
+	        return ResponseEntity.ok(updatedTask);
+	    } catch (RuntimeException e) {
+	        if (e.getMessage().contains("Not found")) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+	        } else if (e.getMessage().contains("Board does not exist")) {
+	            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+	        }
+	        throw e;
+	    }
 	}
+
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) //Define Http 204 como padrão se der tudo certo, este método não tem corpo.
 	public void delete(@PathVariable Long id) {
-		Optional<Task> task = taskUseCase.getById(id);
+		Optional<Task> task = taskInputPort.getById(id);
 		
 		if (task.isEmpty()) 
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND); // Throw new = diz para o Java parar a execução normal do programa e lançar uma exceção.
 		
-		taskUseCase.deleteTask(id);
+		taskInputPort.deleteTask(id);
 	}
 	
 }

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
-import com.projeto.quadrokanban.core.usecase.BoardUseCase;
+import com.projeto.quadrokanban.core.port.input.BoardInputPort;
 
 import jakarta.validation.Valid;
 
@@ -29,39 +29,39 @@ import jakarta.validation.Valid;
 public class BoardController {
 	
 	@Autowired
-	private BoardUseCase boardUseCase;
+	private BoardInputPort boardInputPort;
 
 	
 	
 	@GetMapping
 	public ResponseEntity<List<Board>> getAll() {
-		return ResponseEntity.ok(boardUseCase.getAllBoards());
+		return ResponseEntity.ok(boardInputPort.getAllBoards());
 	}
 	
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Board> getById(@PathVariable Long id) {
-		Optional<Board> board = boardUseCase.getById(id);
+		Optional<Board> board = boardInputPort.getById(id);
 		return board.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 	
 	@GetMapping("/name/{name}")
 	public ResponseEntity<List<Board>> getByName(@PathVariable String name){
-		return ResponseEntity.ok(boardUseCase.getByName(name));
+		return ResponseEntity.ok(boardInputPort.getByName(name));
 	}
 	
 	@PostMapping
 	public ResponseEntity<Board> post(@Valid @RequestBody Board board) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(boardUseCase.createdBoard(board));
+		return ResponseEntity.status(HttpStatus.CREATED).body(boardInputPort.createdBoard(board));
 	}
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Board> put(@PathVariable Long id, @Valid @RequestBody Board board) {
-	    return boardUseCase.getById(id)
+	    return boardInputPort.getById(id)
 	            .map(existingBoard -> {
 	                board.setId(id); 
-	                Board updatedBoard = boardUseCase.createdBoard(board);
+	                Board updatedBoard = boardInputPort.createdBoard(board);
 	                return ResponseEntity.ok(updatedBoard);
 	            })
 	            .orElse(ResponseEntity.notFound().build());
@@ -70,12 +70,12 @@ public class BoardController {
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete (@PathVariable Long id) {
-		Optional<Board> board = boardUseCase.getById(id);
+		Optional<Board> board = boardInputPort.getById(id);
 		
 		if(board.isEmpty())
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		
-		boardUseCase.deleteBoard(id);
+		boardInputPort.deleteBoard(id);
 	}
 	
 }
