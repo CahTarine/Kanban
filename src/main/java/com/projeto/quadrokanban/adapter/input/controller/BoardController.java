@@ -30,8 +30,6 @@ public class BoardController {
 	
 	@Autowired
 	private BoardInputPort boardInputPort;
-
-	
 	
 	@GetMapping
 	public ResponseEntity<List<Board>> getAll() {

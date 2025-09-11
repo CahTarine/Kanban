@@ -61,7 +61,7 @@ public class BoardRepository implements BoardOutputPort{
 			KeyHolder keyHolder = new GeneratedKeyHolder();
 			
 			jdbcTemplate.update(connection -> {
-	            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+	            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
 	            ps.setString(1, boardEntity.getName());
 	            return ps;
 			}, keyHolder);

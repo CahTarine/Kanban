@@ -40,7 +40,7 @@ public class TaskRepository implements TaskOutputPort{
 
 	@Override
 	public Optional<Task> findById(Long id) {
-		String sql = "SELECT * FROM tb_task WHERE id = ?";
+		String sql = "SELECT * FROM get_task_with_id(?)";
 		// Encontra a entidade e, se existir, a converte para o domínio
 		return jdbcTemplate.query(sql, rowMapper, id)
 				.stream()
@@ -61,7 +61,7 @@ public class TaskRepository implements TaskOutputPort{
 		
 		if (taskEntity.getId() == null) {
 			// Insert
-			String sql = "INSERT INTO tb_task (title, description, status, board_id) VALUES (?, ?, ?, ?)";
+			String sql = "INSERT INTO pr_upsert_task";
 			KeyHolder keyHolder = new GeneratedKeyHolder();
 			
 			
