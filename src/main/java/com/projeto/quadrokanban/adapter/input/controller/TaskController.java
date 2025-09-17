@@ -1,5 +1,7 @@
 package com.projeto.quadrokanban.adapter.input.controller;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,13 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Task;
+import com.projeto.quadrokanban.core.enums.TaskStatus;
 import com.projeto.quadrokanban.core.port.input.TaskInputPort;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/task")
-@CrossOrigin(origins = "*", allowedHeaders = "*") //Pesquisar
+@CrossOrigin(origins = "*", allowedHeaders = "*") //Anotação que libera o CORS, permitindo requisições de outras origens.
 public class TaskController {
 	
 	private TaskInputPort taskInputPort;
@@ -85,4 +88,45 @@ public class TaskController {
 		taskInputPort.deleteTask(id);
 	}
 	
+	
+	@GetMapping("/status/{status}")
+	public ResponseEntity<List<Task>> getByStatus(@PathVariable String status){
+		try {
+	        TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
+	        return ResponseEntity.ok(taskInputPort.getByStatus(taskStatus));
+	    } catch (IllegalArgumentException e) {
+	        return ResponseEntity.badRequest().body(null); // Retorne um erro 400 se o status for inválido
+	    }
+	}
+	
+	@GetMapping("/board/{boardId}")
+	public ResponseEntity<List<Task>> getByBoard(@PathVariable Long boardId) {
+		return ResponseEntity.ok(taskInputPort.getByBoard(boardId));
+	}
+		
+	@GetMapping("/board-status/{boardId}/{status}")
+	public ResponseEntity<List<Task>> getByBoardIdAndStatus(@PathVariable Long boardId, @PathVariable String status){
+		try {
+			TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
+			return ResponseEntity.ok(taskInputPort.getByBoardAndStatus(boardId, taskStatus));
+		}  catch (IllegalArgumentException e) {
+	        return ResponseEntity.badRequest().body(null); // Retorne um erro 400 se o status for inválido
+	    }
+	}
+	
+	@GetMapping("/last-task")
+	public ResponseEntity<Optional<Task>> getLastCreatedTask(){
+		return ResponseEntity.ok(taskInputPort.getLastCreatedTask());
+	}
+	
+	@GetMapping("/duedate/{dueDateString}")
+	public ResponseEntity<List<Task>> getByDueDate(@PathVariable String dueDateString){
+		
+//		Define o formato que esperamos na URL
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//		Faz a conversão do formato esperado para o formato LocalDateTime
+		LocalDate dueDate = LocalDate.parse(dueDateString, formatter);
+		
+		return ResponseEntity.ok(taskInputPort.getByDueDate(dueDate));
+	}
 }

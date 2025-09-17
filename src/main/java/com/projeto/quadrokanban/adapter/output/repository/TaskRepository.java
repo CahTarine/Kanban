@@ -1,7 +1,10 @@
 package com.projeto.quadrokanban.adapter.output.repository;
 
 import java.sql.CallableStatement;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import com.projeto.quadrokanban.adapter.output.entity.TaskEntity;
 import com.projeto.quadrokanban.adapter.output.mapper.TaskMapper;
 import com.projeto.quadrokanban.core.domain.model.Task;
+import com.projeto.quadrokanban.core.enums.TaskStatus;
 import com.projeto.quadrokanban.core.port.output.TaskOutputPort;
 
 
@@ -20,6 +24,7 @@ public class TaskRepository implements TaskOutputPort{
 	
 	private final JdbcTemplate jdbcTemplate;
 	private final TaskMapper taskMapper;
+//	rowMapper mapeia automaticamente os nomes das colunas do ResultSet(banco de dados) para o nome dos atributos da entity;
 	private final BeanPropertyRowMapper<TaskEntity> rowMapper = new BeanPropertyRowMapper<>(TaskEntity.class);
 	
 	public TaskRepository (JdbcTemplate jdbcTemplate, TaskMapper taskMapper) {
@@ -38,7 +43,7 @@ public class TaskRepository implements TaskOutputPort{
 
 	@Override
 	public Optional<Task> findById(Long id) {
-		String sql = "SELECT * FROM get_task_with_id(?)";
+		String sql = "SELECT * FROM get_task_by_id(?)";
 		// Encontra a entidade e, se existir, a converte para o domínio
 		return jdbcTemplate.query(sql, rowMapper, id)
 				.stream()
@@ -61,7 +66,7 @@ public class TaskRepository implements TaskOutputPort{
 	public Task save(Task task) {
 	    TaskEntity taskEntity = taskMapper.toEntity(task);
 	    // Call é usado para chamar Procedures e SELECT para Functions;
-	    String sql = "{? = call upsert_task(?, ?, ?, ?, ?)}";
+	    String sql = "{? = call upsert_task(?, ?, ?, ?, ?, ?)}";
 
 	    if (taskEntity.getId() == null) {
 //	    	INSERT
@@ -79,6 +84,17 @@ public class TaskRepository implements TaskOutputPort{
 	            cs.setString(4, taskEntity.getDescription());
 	            cs.setString(5, taskEntity.getStatus().name());
 	            cs.setLong(6, taskEntity.getBoardId());
+	            
+//	            Conversão de LocalDateTime(TaskEntity) para TimeStamp(Banco de dados).
+	            LocalDateTime localDateTime = taskEntity.getDueDate();
+
+	            if (localDateTime != null) {
+	                Timestamp timestamp = Timestamp.valueOf(localDateTime);
+	                
+	                cs.setTimestamp(7, timestamp);
+	            } else {
+	                cs.setNull(7, Types.TIMESTAMP);
+	            }
 	            
 	            cs.execute(); // Gatilho que inicia o trabalho da procedure.
 	            
@@ -122,6 +138,52 @@ public class TaskRepository implements TaskOutputPort{
 		});
 		
 	}
+	
+	@Override
+	public List<Task> findAllByStatus(TaskStatus status){
+		String sql = "SELECT * FROM get_task_by_status(?)";
+		
+		return jdbcTemplate.query(sql, rowMapper, status.name())
+				.stream().map(taskMapper::toDomain).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<Task> findAllByBoard(Long boardId){
+		String sql = "SELECT * FROM get_task_by_board(?)";
+		
+		return jdbcTemplate.query(sql, rowMapper, boardId)
+				.stream().map(taskMapper::toDomain).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<Task> findByBoardAndStatus(Long boardId, TaskStatus status){
+		String sql = "SELECT * FROM get_task_by_board_and_status(?, ?)";
+		
+		return jdbcTemplate.query(sql, rowMapper, boardId, status.name())
+				.stream().map(taskMapper::toDomain).collect(Collectors.toList());
+	}
+	
+	@Override
+	public Optional<Task> findLastCreatedTask(){
+		String sql = "SELECT * FROM get_last_created_task()";
+		
+		return jdbcTemplate.query(sql, rowMapper)
+				.stream().findFirst().map(taskMapper::toDomain);
+	}
+	
+	@Override
+	public List<Task> findByDueDate(LocalDate dueDate){
+//		Cria um espaço de tempo para a comparação de data e hora
+		LocalDateTime startOfDay = dueDate.atStartOfDay();
+		LocalDateTime endOfDay = dueDate.atTime(23, 59, 59);
+		
+		
+		String sql = "SELECT * FROM get_task_by_due_date(?, ?)";
+		
+		return jdbcTemplate.query(sql, rowMapper, startOfDay, endOfDay)
+				.stream().map(taskMapper::toDomain).collect(Collectors.toList());
+	}
 
+	
 
 }

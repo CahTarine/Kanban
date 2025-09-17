@@ -15,6 +15,7 @@ public class TaskEntity {
 	private LocalDateTime updatedAt;
 	private TaskStatus status;
 	private Long boardId;
+	private LocalDateTime dueDate;
 	
 	public Long getId() {
 		return id;

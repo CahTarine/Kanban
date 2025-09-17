@@ -1,5 +1,6 @@
 package com.projeto.quadrokanban.core.usecase;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.domain.model.Task;
+import com.projeto.quadrokanban.core.enums.TaskStatus;
 import com.projeto.quadrokanban.core.port.input.TaskInputPort;
 import com.projeto.quadrokanban.core.port.output.TaskOutputPort;
 
@@ -60,5 +62,25 @@ public class TaskUseCase implements TaskInputPort {
 	        task.setBoard(board);
 	        return taskOutputPort.save(task);
 	}
+	 
+	 public List<Task> getByStatus(TaskStatus status){
+		 return taskOutputPort.findAllByStatus(status);
+	 }
+	 
+	 public List<Task> getByBoard(Long boardId){
+		 return taskOutputPort.findAllByBoard(boardId);
+	 }
+	 
+	 public List<Task> getByBoardAndStatus(Long boardId, TaskStatus status){
+		 return taskOutputPort.findByBoardAndStatus(boardId, status);
+	 }
+	 
+	 public Optional<Task> getLastCreatedTask(){
+		 return taskOutputPort.findLastCreatedTask();
+	 }
+	 
+	 public List<Task> getByDueDate(LocalDate dueDate){
+		 return taskOutputPort.findByDueDate(dueDate);
+	 }
 
 }
