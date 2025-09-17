@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
+import com.projeto.quadrokanban.core.enums.BoardStatus;
 
 public interface BoardInputPort {
 	
@@ -20,5 +21,13 @@ public interface BoardInputPort {
 	void deleteBoard(Long id);
 	
 	boolean existsById(Long id);
+	
+	Optional<Long> countTasks(Long boardId);
+	
+	List<Board> getBoadsWithOverdueTasks();
+	
+	List<Board> getByStatus(BoardStatus status);
+	
+	void finalizedBoard(Long boardId);
 
 }

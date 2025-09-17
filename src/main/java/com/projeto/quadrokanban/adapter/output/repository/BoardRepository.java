@@ -8,16 +8,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.projeto.quadrokanban.adapter.output.entity.BoardEntity;
-import com.projeto.quadrokanban.adapter.output.entity.TaskEntity;
 import com.projeto.quadrokanban.adapter.output.mapper.BoardMapper;
 import com.projeto.quadrokanban.core.domain.model.Board;
+import com.projeto.quadrokanban.core.enums.BoardStatus;
 import com.projeto.quadrokanban.core.port.output.BoardOutputPort;
 
 @Repository
@@ -100,7 +99,47 @@ public class BoardRepository implements BoardOutputPort{
 		});
 		
 	}
+	
+	@Override
+	public Optional<Long> countTasksByBoard(Long boardId){
+		String sql = "SELECT * FROM count_tasks_by_board(?)";
+		
+//		Tratamento de erro nulo.
+		try {
+			Long count = jdbcTemplate.queryForObject(sql, Long.class, boardId); // queryForObject é um método que espera 1 unico valor.
+			return Optional.ofNullable(count); // Se caso o count for null, vai ser emcapsulado em um Optional.empty.
+		} catch (EmptyResultDataAccessException e) {
+	        return Optional.of(0L); // Optional com valor 0 para garantir que o código nunca retorne um null.
+	    }
+	}
+
+	
+	@Override
+	public List<Board> findBoadsWithOverdueTasks(){
+		String sql = "SELECT * FROM get_boards_with_overdue_tasks()";
+		
+		return jdbcTemplate.query(sql, rowMapper)
+			.stream().map(boardMapper::toDomain).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<Board> findByStatus(BoardStatus status) {
+		String sql = "SELECT * FROM get_board_by_status(?)";
+		
+		return jdbcTemplate.query(sql, rowMapper, status.name())
+				.stream().map(boardMapper::toDomain).collect(Collectors.toList());
+	}
 
 
-
+	@Override
+    public Boolean areAllTasksDone(Long boardId) {
+        String sql = "SELECT check_if_board_is_complete(?)";
+        return jdbcTemplate.queryForObject(sql, Boolean.class, boardId);
+    }
+	
+	@Override
+    public void updateBoardStatus(Long boardId, BoardStatus status) {
+        String sql = "call update_board_status(?, ?)";
+        jdbcTemplate.update(sql, boardId, status.name());
+    }
 }

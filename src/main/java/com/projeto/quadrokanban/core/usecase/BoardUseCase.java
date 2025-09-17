@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
+import com.projeto.quadrokanban.core.enums.BoardStatus;
 import com.projeto.quadrokanban.core.port.input.BoardInputPort;
 import com.projeto.quadrokanban.core.port.output.BoardOutputPort;
 
@@ -48,5 +49,27 @@ public class BoardUseCase implements BoardInputPort{
 	    public boolean existsById(Long id) {
 	        return boardOutputPort.findById(id).isPresent();
 	    }
-
+	    
+	    public Optional<Long> countTasks(Long boardId){
+	    	return boardOutputPort.countTasksByBoard(boardId);
+	    }
+	    
+	    public List<Board> getBoadsWithOverdueTasks(){
+	    	return boardOutputPort.findBoadsWithOverdueTasks();
+	    }
+	    
+	    public List<Board> getByStatus(BoardStatus status){
+	    	return boardOutputPort.findByStatus(status);
+	    }
+	    
+	    @Override
+	    public void finalizedBoard(Long boardId) {
+	        boolean allTasksDone = boardOutputPort.areAllTasksDone(boardId); // Verifica se todas as tasks estão concluídas
+	        
+	        if (allTasksDone) {
+	            boardOutputPort.updateBoardStatus(boardId, BoardStatus.COMPLETED);
+	        } else {
+	            throw new IllegalStateException("Cannot finalize board with pending tasks.");
+	        }
+	    }
 }

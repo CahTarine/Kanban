@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
+import com.projeto.quadrokanban.core.enums.BoardStatus;
 import com.projeto.quadrokanban.core.port.input.BoardInputPort;
 
 import jakarta.validation.Valid;
@@ -75,5 +76,38 @@ public class BoardController {
 		
 		boardInputPort.deleteBoard(id);
 	}
+	
+	@GetMapping("/task-counts/{boardId}")
+	public ResponseEntity<Long> countTasks(@PathVariable Long boardId){
+		Optional<Long> count = boardInputPort.countTasks(boardId);
+		return count.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.ok(0L));
+	}
+	
+	@GetMapping("/overdue")
+	public ResponseEntity<List<Board>> findOverdueBoards(){
+		return ResponseEntity.ok(boardInputPort.getBoadsWithOverdueTasks());
+	}
+	
+	@GetMapping("/status/{status}")
+	public ResponseEntity<List<Board>> getByStatus(@PathVariable String status) {
+		try {
+			BoardStatus boardStatus = BoardStatus.valueOf(status.toUpperCase());
+		    return ResponseEntity.ok(boardInputPort.getByStatus(boardStatus));
+		} catch (IllegalArgumentException e) {
+	        return ResponseEntity.badRequest().body(null); // Retorne um erro 400 se o status for inválido
+	    }
+		
+	}
+	
+	 @PostMapping("/{boardId}/finalize")
+	    public ResponseEntity<String> finalizedBoard(@PathVariable Long boardId) {
+	        try {
+	            boardInputPort.finalizedBoard(boardId);
+	            return ResponseEntity.ok("Board " + boardId + " completed successfully");
+	        } catch (IllegalStateException e) {
+	            return ResponseEntity.badRequest().body(e.getMessage());
+	        }
+	    }
+
 	
 }
