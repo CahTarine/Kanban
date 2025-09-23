@@ -1,8 +1,6 @@
 package com.projeto.quadrokanban.adapter.output.repository;
 
 import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
