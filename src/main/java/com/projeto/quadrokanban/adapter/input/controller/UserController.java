@@ -3,7 +3,6 @@ package com.projeto.quadrokanban.adapter.input.controller;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,13 +23,17 @@ import com.projeto.quadrokanban.core.port.input.UserInputPort;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
 	
-	@Autowired
 	private UserInputPort userInputPort;
 	
+	public UserController(UserInputPort userInputPort) {
+		super();
+		this.userInputPort = userInputPort;
+	}
+
 	@GetMapping
 	public ResponseEntity<List<User>> getAll(){
 		return ResponseEntity.ok(userInputPort.getAllUsers());
@@ -48,20 +52,16 @@ public class UserController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<User> post(@Valid @PathVariable User user){
+	public ResponseEntity<User> post(@Valid @RequestBody User user){
 		return ResponseEntity.status(HttpStatus.CREATED).body(userInputPort.createdUser(user));
 	}
 	
 	// *******************
 	@PutMapping("/{id}")
-	public ResponseEntity<User> put(@Valid @PathVariable User user, @PathVariable Long id){
-		return userInputPort.getUserById(id)
-            .map(existingUser -> {
-                user.setId(id); 
-                User updatedUser = userInputPort.createdUser(user);
-                return ResponseEntity.ok(updatedUser);
-            })
-            .orElse(ResponseEntity.notFound().build());
+	public ResponseEntity<User> put(@Valid @RequestBody User userUpdates, @PathVariable Long id){
+             User updatedUser = userInputPort.updateUser(id, userUpdates);
+                
+            return ResponseEntity.ok(updatedUser);
 	}
 	
 	

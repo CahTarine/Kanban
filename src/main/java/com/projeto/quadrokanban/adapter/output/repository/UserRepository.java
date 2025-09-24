@@ -30,20 +30,20 @@ public class UserRepository implements UserOutputPort {
 	
 	@Override
 	public List<User> findAllUsers(){
-		String sql = "SELECT * FROM get_all_users()";
+		String sql = "SELECT * FROM users.get_all_users()";
 		return jdbcTemplate.query(sql, rowMapper).stream().map(userMapper::toDomain).collect(Collectors.toList());
 	}
 	
 	@Override
 	public Optional<User> findUserById(Long id){
-		String sql = "SELECT * FROM get_user_by_id(?)";
+		String sql = "SELECT * FROM users.get_user_by_id(?)";
 		return jdbcTemplate.query(sql, rowMapper, id)
 				.stream().findFirst().map(userMapper::toDomain);
 	}
 	
 	@Override
 	public List<User> findUserByName(String name){
-		String sql = "SELECT * FROM get_user_by_name(?)";
+		String sql = "SELECT * FROM users.get_user_by_name(?)";
 		return jdbcTemplate.query(sql, rowMapper, "%" + name + "%").stream()
 				.map(userMapper::toDomain).collect(Collectors.toList());
 	}
@@ -52,7 +52,7 @@ public class UserRepository implements UserOutputPort {
 	public User savedUser(User user) {
 		UserEntity userEntity = userMapper.toEntity(user);
 		
-		String sql = "SELECT * FROM upsert_user(?, ?)";
+		String sql = "{ ? = call users.upsert_user(?, ?, ?) }";
 		
 		if (userEntity.getId() == null) {
 			jdbcTemplate.execute(sql, (CallableStatement cs) -> {
@@ -68,7 +68,7 @@ public class UserRepository implements UserOutputPort {
 	} else {
 		jdbcTemplate.execute(sql, (CallableStatement cs) -> {
 			cs.registerOutParameter(1, Types.BIGINT);
-			cs.setNull(2, Types.BIGINT);
+			cs.setLong(2, userEntity.getId());
 			cs.setString(3, userEntity.getName());
 			cs.setString(4, userEntity.getEmail());
 			

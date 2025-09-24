@@ -15,7 +15,7 @@ public interface UserInputPort {
 	
 	User createdUser(User user);
 	
-	Optional<User> updateUser(User user, Long id);
+	User updateUser(Long id, User user);
 	
 	void deleteUser(Long id);
 	
