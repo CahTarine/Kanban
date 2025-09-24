@@ -59,8 +59,9 @@ public class BoardController {
 	public ResponseEntity<Board> put(@PathVariable Long id, @Valid @RequestBody Board board) {
 	    return boardInputPort.getById(id)
 	            .map(existingBoard -> {
-	                board.setId(id); 
-	                Board updatedBoard = boardInputPort.createdBoard(board);
+	            	existingBoard.setName(board.getName());
+                    existingBoard.setStatus(board.getStatus());
+	                Board updatedBoard = boardInputPort.updateBoard(id, existingBoard);
 	                return ResponseEntity.ok(updatedBoard);
 	            })
 	            .orElse(ResponseEntity.notFound().build());
