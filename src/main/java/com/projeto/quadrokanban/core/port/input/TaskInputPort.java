@@ -25,7 +25,7 @@ public interface TaskInputPort {
 	
 	List<Task> getByStatus(TaskStatus status);
 	
-	List<Task> getByBoard(Long boardId);
+	List<Task> getTaskByBoard(Long boardId);
 	
 	List<Task> getByBoardAndStatus(Long boardId, TaskStatus status);
 	

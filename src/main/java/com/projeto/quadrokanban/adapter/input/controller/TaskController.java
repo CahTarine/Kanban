@@ -101,7 +101,7 @@ public class TaskController {
 	
 	@GetMapping("/board/{boardId}")
 	public ResponseEntity<List<Task>> getByBoard(@PathVariable Long boardId) {
-		return ResponseEntity.ok(taskInputPort.getByBoard(boardId));
+		return ResponseEntity.ok(taskInputPort.getTaskByBoard(boardId));
 	}
 		
 	@GetMapping("/board-status/{boardId}/{status}")
@@ -110,7 +110,7 @@ public class TaskController {
 			TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
 			return ResponseEntity.ok(taskInputPort.getByBoardAndStatus(boardId, taskStatus));
 		}  catch (IllegalArgumentException e) {
-	        return ResponseEntity.badRequest().body(null); // Retorne um erro 400 se o status for inválido
+	        return ResponseEntity.badRequest().body(null); // Retorna um erro 400 se o status for inválido
 	    }
 	}
 	

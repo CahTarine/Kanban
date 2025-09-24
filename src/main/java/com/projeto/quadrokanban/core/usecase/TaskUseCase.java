@@ -17,10 +17,12 @@ public class TaskUseCase implements TaskInputPort {
 	
 	private final TaskOutputPort taskOutputPort;
 	private final BoardValidatorService boardValidatorService;
+	private final ValidateTaskRules validateTaskRules;
 	
-	public TaskUseCase (TaskOutputPort taskOutputPort, BoardValidatorService boardValidatorService) {
+	public TaskUseCase (TaskOutputPort taskOutputPort, BoardValidatorService boardValidatorService, ValidateTaskRules validateTaskRules) {
 		this.taskOutputPort = taskOutputPort;
 		this.boardValidatorService = boardValidatorService;
+		this.validateTaskRules = validateTaskRules;
 	}
 	
 	
@@ -37,16 +39,23 @@ public class TaskUseCase implements TaskInputPort {
 		return taskOutputPort.findAllByTitleContainingIgnoreCase(title);
 	}
 	
+	
 	public Task updateTask(Long id, Task task) {
-		if (!taskOutputPort.findById(id).isPresent())
-		    throw new RuntimeException("Task not found");
-	    
+		validateTaskRules.validateTaskRules(task);
+		
+		Task existingTask = taskOutputPort.findById(id)
+				.orElseThrow(() -> new RuntimeException("Task not found."));
+		
 		Board board = boardValidatorService.validateBoardExists(task.getBoard().getId());
 		
-	    task.setId(id);
-	    task.setBoard(board);
-	    
-	    return taskOutputPort.save(task);
+		existingTask.setTitle(task.getTitle());
+		existingTask.setDescription(task.getDescription());
+		existingTask.setStatus(task.getStatus());
+		existingTask.setBoard(board);
+		existingTask.setDueDate(task.getDueDate());
+		existingTask.setUserId(task.getUserId());
+		
+	    return taskOutputPort.save(existingTask);
 	}
 	
 	public void deleteTask(Long id) {
@@ -58,6 +67,8 @@ public class TaskUseCase implements TaskInputPort {
 	}
 	
 	 public Task createTaskWithBoard(Task task, Long id) {
+		 validateTaskRules.validateTaskRules(task);
+			 
 	        Board board = boardValidatorService.validateBoardExists(id);
 	        task.setBoard(board);
 	        return taskOutputPort.save(task);
@@ -67,8 +78,8 @@ public class TaskUseCase implements TaskInputPort {
 		 return taskOutputPort.findAllByStatus(status);
 	 }
 	 
-	 public List<Task> getByBoard(Long boardId){
-		 return taskOutputPort.findAllByBoard(boardId);
+	 public List<Task> getTaskByBoard(Long boardId){
+		 return taskOutputPort.findAllTaskByBoard(boardId);
 	 }
 	 
 	 public List<Task> getByBoardAndStatus(Long boardId, TaskStatus status){
@@ -82,5 +93,7 @@ public class TaskUseCase implements TaskInputPort {
 	 public List<Task> getByDueDate(LocalDate dueDate){
 		 return taskOutputPort.findByDueDate(dueDate);
 	 }
+	 
+	 
 
 }
