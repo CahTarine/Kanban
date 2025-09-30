@@ -70,10 +70,6 @@ public class TaskUseCase implements TaskInputPort {
         taskOutputPort.deleteById(id);
 	}
 	
-	public boolean existsById(Long id) {
-	    return taskOutputPort.findById(id).isPresent();
-	}
-	
 	 public Task createTaskWithBoard(Task task, Long id) {
 		 validateTaskRules.validateTaskRules(task);
 			 
@@ -86,20 +82,22 @@ public class TaskUseCase implements TaskInputPort {
          try {
              TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
              return taskOutputPort.findAllByStatus(taskStatus);
-         } catch (InvalidStatusException e) {
+         } catch (IllegalArgumentException e) {
              throw new InvalidStatusException("Invalid status.");
          }
 	 }
 	 
 	 public List<Task> getTaskByBoard(Long boardId){
-		 return taskOutputPort.findAllTaskByBoard(boardId);
+            boardValidatorService.validateBoardExists(boardId);
+            return taskOutputPort.findAllTaskByBoard(boardId);
 	 }
 	 
 	 public List<Task> getByBoardAndStatus(Long boardId, String status){
+         boardValidatorService.validateBoardExists(boardId);
          try {
              TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
              return taskOutputPort.findByBoardAndStatus(boardId, taskStatus);
-         }  catch (InvalidStatusException e) {
+         }  catch (IllegalArgumentException e) {
              throw new InvalidStatusException("Invalid status.");
          }
 	 }
