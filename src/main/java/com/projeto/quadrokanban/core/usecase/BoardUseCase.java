@@ -4,10 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import com.projeto.quadrokanban.core.domain.exception.InvalidStatusException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.projeto.quadrokanban.core.domain.exception.BoardNotFoundException;
 import com.projeto.quadrokanban.core.domain.exception.BoardValidationException;
 import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.enums.BoardStatus;
@@ -30,8 +28,7 @@ public class BoardUseCase implements BoardInputPort{
 	    }
 	 
 	 public Board getById(Long id){
-		 return boardOutputPort.findById(id)
-                 .orElseThrow(() -> new BoardNotFoundException("Board not found."));
+         return boardValidatorService.validateBoardExists(id);
 	 }
 
 	 public List<Board> getByName(String name){
@@ -44,8 +41,7 @@ public class BoardUseCase implements BoardInputPort{
 	 
 	 
 	 public Board updateBoard(Long id, Board boardUpdates) {
-	       Board existingBoard = boardOutputPort.findById(id)
-	    		   .orElseThrow(() -> new BoardNotFoundException("Board not found with ID: " + id));
+	       Board existingBoard = boardValidatorService.validateBoardExists(id);
 	       existingBoard.setName(boardUpdates.getName());
 	       existingBoard.setStatus(boardUpdates.getStatus());
 	       
@@ -54,13 +50,8 @@ public class BoardUseCase implements BoardInputPort{
 	 }
 
 	    public void deleteBoard(Long id) {
-	        boardOutputPort.findById(id)
-                            .orElseThrow(() -> new BoardNotFoundException("Board not found."));
+	        boardValidatorService.validateBoardExists(id);
          boardOutputPort.deleteById(id);
-	    }
-	    
-	    public boolean existsById(Long id) {
-	        return boardOutputPort.findById(id).isPresent();
 	    }
 
 	    public Optional<Long> countTasks(Long boardId){
@@ -76,13 +67,14 @@ public class BoardUseCase implements BoardInputPort{
             try {
                 BoardStatus boardStatus = BoardStatus.valueOf(status.toUpperCase());
                 return boardOutputPort.findByStatus(boardStatus);
-            } catch (InvalidStatusException e) {
+            } catch (IllegalArgumentException e) {
                 throw new InvalidStatusException("Invalid status.");
             }
 	    }
 	    
 	    @Override
 	    public void finalizedBoard(Long boardId) {
+            boardValidatorService.validateBoardExists(boardId);
 	        boolean allTasksDone = boardOutputPort.areAllTasksDone(boardId); // Verifica se todas as tasks estão concluídas
 	        
 	        if (allTasksDone) {
