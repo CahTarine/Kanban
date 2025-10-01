@@ -84,12 +84,12 @@ public class TaskUseCase implements TaskInputPort {
 	        Board board = boardValidatorService.validateBoardExists(id);
 	        task.setBoard(board);
 
-            if(task.getUserId() != null){
-                Task savedTask = taskOutputPort.save(task);
+            Task savedTask = taskOutputPort.save(task);
+
+            if(task.getUserId() != null)
                 notificationPort.notifyUser(savedTask);
-                return savedTask;
-            }
-	        return taskOutputPort.save(task);
+
+	        return savedTask;
 	}
 	 
 	 public List<Task> getByStatus(String status){
