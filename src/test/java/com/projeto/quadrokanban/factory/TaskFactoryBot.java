@@ -52,4 +52,16 @@ public class TaskFactoryBot {
         return new Task(1L, "Task Atualizada", "Task para testes unitários",
                 createdAt, updatedAt, TaskStatus.DONE, board, dueDate, null);
     }
+
+    public static Task validTask(){
+        Board board = new Board(1L, "Board Teste", null, null);
+
+        LocalDateTime createdAt = LocalDate.of(2025, 9, 10).atStartOfDay();
+        LocalDateTime updatedAt = LocalDate.of(2025, 9, 15).atStartOfDay();
+        LocalDateTime dueDate = LocalDate.of(2025, 10, 20).atStartOfDay();
+
+        return new Task(null, "Task Teste", "Task para testes unitários",
+                createdAt, updatedAt, TaskStatus.TODO, board, dueDate, 1L);
+    }
+
 }

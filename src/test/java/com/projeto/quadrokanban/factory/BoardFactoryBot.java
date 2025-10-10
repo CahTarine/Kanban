@@ -12,7 +12,11 @@ public class BoardFactoryBot {
     }
 
     public static Board updateBoard(){
-        return new Board(null, "Board Atualizado", BoardStatus.ACTIVE, new ArrayList<>());
+        return new Board(1L, "Board Atualizado", BoardStatus.ACTIVE, new ArrayList<>());
+    }
+
+    public static Board validBoard(){
+        return new Board(null, "Teste Board", BoardStatus.ACTIVE, new ArrayList<>());
     }
 
 }
