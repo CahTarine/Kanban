@@ -1,4 +1,4 @@
-package com.projeto.quadrokanban.core.usecase;
+package com.projeto.quadrokanban.util.validation;
 
 import org.springframework.stereotype.Component;
 

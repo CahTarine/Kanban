@@ -53,7 +53,7 @@ public class BoardRepository implements BoardOutputPort{
 	}
 
 	@Override
-//	Usar .execute quando é um método de manipulação de dados ou que possue parametro de entrada e saída (INOUT/OUT)
+//	Usar .execute quando é um metodo de manipulação de dados ou que possue parametro de entrada e saída (INOUT/OUT)
 	public Board save(Board board) {
 		BoardEntity boardEntity = boardMapper.toEntity(board);
 		
@@ -104,8 +104,8 @@ public class BoardRepository implements BoardOutputPort{
 		
 //		Tratamento de erro nulo.
 		try {
-			Long count = jdbcTemplate.queryForObject(sql, Long.class, boardId); // queryForObject é um método que espera 1 unico valor.
-			return Optional.ofNullable(count); // Se caso o count for null, vai ser emcapsulado em um Optional.empty.
+			Long count = jdbcTemplate.queryForObject(sql, Long.class, boardId); // queryForObject é um metodo que espera 1 unico valor.
+			return Optional.ofNullable(count); // Se caso o count for null, vai ser encapsulado em um Optional.empty.
 		} catch (EmptyResultDataAccessException e) {
 	        return Optional.of(0L); // Optional com valor 0 para garantir que o código nunca retorne um null.
 	    }

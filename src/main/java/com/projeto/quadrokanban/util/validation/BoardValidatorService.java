@@ -1,4 +1,4 @@
-package com.projeto.quadrokanban.core.usecase;
+package com.projeto.quadrokanban.util.validation;
 
 import com.projeto.quadrokanban.core.domain.exception.BoardNotFoundException;
 import org.springframework.stereotype.Service;

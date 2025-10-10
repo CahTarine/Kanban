@@ -3,6 +3,7 @@ package com.projeto.quadrokanban.adapter.input.controller;
 import java.util.List;
 import java.util.Optional;
 
+import com.projeto.quadrokanban.adapter.input.swagger.BoardSwagger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
-import com.projeto.quadrokanban.core.enums.BoardStatus;
 import com.projeto.quadrokanban.core.port.input.BoardInputPort;
 
 import jakarta.validation.Valid;
@@ -27,7 +26,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/board")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class BoardController {
+public class BoardController implements BoardSwagger {
 	
 	@Autowired
 	private BoardInputPort boardInputPort;
@@ -65,8 +64,9 @@ public class BoardController {
 	}
 	
 	@GetMapping("/task-counts/{boardId}")
-	public ResponseEntity<Optional<Long>> countTasks(@PathVariable Long boardId){
-		return ResponseEntity.ok(boardInputPort.countTasks(boardId));
+	public ResponseEntity<Long> countTasks(@PathVariable Long boardId){
+        Optional<Long> taskCount = boardInputPort.countTasks(boardId);
+        return ResponseEntity.of(taskCount);
 	}
 	
 	@GetMapping("/overdue")
@@ -82,7 +82,8 @@ public class BoardController {
 	
 	 @PostMapping("/{boardId}/finalize")
 	    public ResponseEntity<String> finalizedBoard(@PathVariable Long boardId) {
-	            return ResponseEntity.ok("Board " + boardId + " completed successfully");
+            boardInputPort.finalizedBoard(boardId);
+            return ResponseEntity.ok("Board " + boardId + " completed successfully");
 	    }
 
 	

@@ -5,18 +5,17 @@ import com.projeto.quadrokanban.core.domain.exception.BoardValidationException;
 import com.projeto.quadrokanban.core.domain.exception.InvalidStatusException;
 import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.enums.BoardStatus;
-import com.projeto.quadrokanban.core.enums.TaskStatus;
 import com.projeto.quadrokanban.core.port.output.BoardOutputPort;
 import com.projeto.quadrokanban.core.usecase.BoardUseCase;
-import com.projeto.quadrokanban.core.usecase.BoardValidatorService;
+import com.projeto.quadrokanban.util.validation.BoardValidatorService;
 import com.projeto.quadrokanban.factory.BoardFactoryBot;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +37,11 @@ class BoardUseCaseTest {
     @InjectMocks
     BoardUseCase useCase;
 //    BoardUseCase board = new BoardUseCase(boardPort);
+
+    @AfterEach
+    public void tearDown() {
+        clearInvocations(port, boardValidator); // Remove todas as interações e stubs do mock
+    }
 
     @Test
     void getAllSuccess_ReturnsList(){
@@ -341,7 +345,10 @@ class BoardUseCaseTest {
 
         assertThrows(BoardValidationException.class, () -> useCase.finalizedBoard(boardId));
 
+        verify(boardValidator, times(1)).validateBoardExists(boardId);
+        verify(port, times(1)).areAllTasksDone(boardId);
         verify(port, never()).updateBoardStatus(anyLong(),any(BoardStatus.class));
+        verifyNoMoreInteractions(port, boardValidator);
     }
 
     @Test
