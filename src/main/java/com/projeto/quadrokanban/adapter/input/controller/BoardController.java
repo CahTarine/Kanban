@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
-import com.projeto.quadrokanban.core.enums.BoardStatus;
 import com.projeto.quadrokanban.core.port.input.BoardInputPort;
 
 import jakarta.validation.Valid;
@@ -65,8 +63,9 @@ public class BoardController {
 	}
 	
 	@GetMapping("/task-counts/{boardId}")
-	public ResponseEntity<Optional<Long>> countTasks(@PathVariable Long boardId){
-		return ResponseEntity.ok(boardInputPort.countTasks(boardId));
+	public ResponseEntity<Long> countTasks(@PathVariable Long boardId){
+        Optional<Long> taskCount = boardInputPort.countTasks(boardId);
+        return ResponseEntity.of(taskCount);
 	}
 	
 	@GetMapping("/overdue")
@@ -82,7 +81,8 @@ public class BoardController {
 	
 	 @PostMapping("/{boardId}/finalize")
 	    public ResponseEntity<String> finalizedBoard(@PathVariable Long boardId) {
-	            return ResponseEntity.ok("Board " + boardId + " completed successfully");
+            boardInputPort.finalizedBoard(boardId);
+            return ResponseEntity.ok("Board " + boardId + " completed successfully");
 	    }
 
 	

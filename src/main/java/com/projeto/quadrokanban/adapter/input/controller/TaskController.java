@@ -88,8 +88,11 @@ public class TaskController {
 	}
 	
 	@GetMapping("/last-task")
-	public ResponseEntity<Optional<Task>> getLastCreatedTask(){
-		return ResponseEntity.ok(taskInputPort.getLastCreatedTask());
+	public ResponseEntity<Task> getLastCreatedTask(){
+        Optional<Task> taskOptional = taskInputPort.getLastCreatedTask();
+        return taskOptional
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
 	}
 	
 	@GetMapping("/duedate/{dueDate}")
