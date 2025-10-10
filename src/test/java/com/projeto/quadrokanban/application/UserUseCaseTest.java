@@ -5,6 +5,7 @@ import com.projeto.quadrokanban.core.domain.model.User;
 import com.projeto.quadrokanban.core.port.output.UserOutputPort;
 import com.projeto.quadrokanban.core.usecase.UserUseCase;
 import com.projeto.quadrokanban.factory.UserFactoryBot;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,6 +26,11 @@ class UserUseCaseTest {
 
     @InjectMocks
     UserUseCase useCase;
+
+    @AfterEach
+    public void tearDown() {
+        clearInvocations(port); // Remove todas as interações e stubs do mock
+    }
 
     @Test
     void getAllSuccess_ReturnsList(){

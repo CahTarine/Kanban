@@ -9,10 +9,11 @@ import com.projeto.quadrokanban.core.domain.model.Task;
 import com.projeto.quadrokanban.core.enums.TaskStatus;
 import com.projeto.quadrokanban.core.port.output.NotificationOutputPort;
 import com.projeto.quadrokanban.core.port.output.TaskOutputPort;
-import com.projeto.quadrokanban.core.usecase.BoardValidatorService;
+import com.projeto.quadrokanban.util.validation.BoardValidatorService;
 import com.projeto.quadrokanban.core.usecase.TaskUseCase;
-import com.projeto.quadrokanban.core.usecase.ValidateTaskRules;
+import com.projeto.quadrokanban.util.validation.ValidateTaskRules;
 import com.projeto.quadrokanban.factory.TaskFactoryBot;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +21,6 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +45,11 @@ public class TaskUseCaseTest {
 
     @InjectMocks
     TaskUseCase useCase;
+
+    @AfterEach
+    public void tearDown() {
+        clearInvocations(port); // Remove todas as interações e stubs do mock
+    }
 
     @Test
     void getAllSuccess_ReturnsList(){
