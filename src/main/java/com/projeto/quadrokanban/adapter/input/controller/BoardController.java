@@ -3,7 +3,6 @@ package com.projeto.quadrokanban.adapter.input.controller;
 import java.util.List;
 import java.util.Optional;
 
-import com.projeto.quadrokanban.adapter.input.swagger.BoardSwagger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.port.input.BoardInputPort;
@@ -26,10 +26,12 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/board")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class BoardController implements BoardSwagger {
+public class BoardController {
 	
 	@Autowired
 	private BoardInputPort boardInputPort;
+
+	
 	
 	@GetMapping
 	public ResponseEntity<List<Board>> getAll() {
@@ -39,7 +41,9 @@ public class BoardController implements BoardSwagger {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Board> getById(@PathVariable Long id) {
-		return ResponseEntity.ok(boardInputPort.getById(id));
+		Optional<Board> board = boardInputPort.getById(id);
+		return board.map(ResponseEntity::ok)
+				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 	
 	@GetMapping("/name/{name}")
@@ -54,37 +58,24 @@ public class BoardController implements BoardSwagger {
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Board> put(@PathVariable Long id, @Valid @RequestBody Board board) {
-	    return ResponseEntity.ok(boardInputPort.updateBoard(id, board));
+	    return boardInputPort.getById(id)
+	            .map(existingBoard -> {
+	                board.setId(id); 
+	                Board updatedBoard = boardInputPort.createdBoard(board);
+	                return ResponseEntity.ok(updatedBoard);
+	            })
+	            .orElse(ResponseEntity.notFound().build());
 	}
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete (@PathVariable Long id) {
+		Optional<Board> board = boardInputPort.getById(id);
+		
+		if(board.isEmpty())
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		
 		boardInputPort.deleteBoard(id);
 	}
-	
-	@GetMapping("/task-counts/{boardId}")
-	public ResponseEntity<Long> countTasks(@PathVariable Long boardId){
-        Optional<Long> taskCount = boardInputPort.countTasks(boardId);
-        return ResponseEntity.of(taskCount);
-	}
-	
-	@GetMapping("/overdue")
-	public ResponseEntity<List<Board>> findOverdueBoards(){
-		return ResponseEntity.ok(boardInputPort.getBoadsWithOverdueTasks());
-	}
-	
-	@GetMapping("/status/{status}")
-	public ResponseEntity<List<Board>> getByStatus(@PathVariable String status) {
-		    return ResponseEntity.ok(boardInputPort.getByStatus(status));
-		
-	}
-	
-	 @PostMapping("/{boardId}/finalize")
-	    public ResponseEntity<String> finalizedBoard(@PathVariable Long boardId) {
-            boardInputPort.finalizedBoard(boardId);
-            return ResponseEntity.ok("Board " + boardId + " completed successfully");
-	    }
-
 	
 }
