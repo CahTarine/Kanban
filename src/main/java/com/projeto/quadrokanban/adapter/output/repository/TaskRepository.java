@@ -53,8 +53,8 @@ public class TaskRepository implements TaskOutputPort{
 
 	@Override
 	public List<Task> findAllByTitleContainingIgnoreCase(String title) {
-		String sql = "SELECT * FROM get_task_by_title(?)";
-		
+
+        String sql = "SELECT * FROM get_task_by_title(?)";
 		return jdbcTemplate.query(sql, rowMapper, "%" + title + "%")
 				.stream()
 				.map(taskMapper::toDomain)
