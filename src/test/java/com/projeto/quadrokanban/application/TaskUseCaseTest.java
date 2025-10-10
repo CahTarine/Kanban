@@ -7,6 +7,7 @@ import com.projeto.quadrokanban.core.domain.exception.TaskNotFoundException;
 import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.domain.model.Task;
 import com.projeto.quadrokanban.core.enums.TaskStatus;
+import com.projeto.quadrokanban.core.port.output.NotificationOutputPort;
 import com.projeto.quadrokanban.core.port.output.TaskOutputPort;
 import com.projeto.quadrokanban.core.usecase.BoardValidatorService;
 import com.projeto.quadrokanban.core.usecase.TaskUseCase;
@@ -38,6 +39,9 @@ public class TaskUseCaseTest {
 
     @Mock
     ValidateTaskRules taskRules;
+
+    @Mock
+    NotificationOutputPort notificationPort;
 
     @InjectMocks
     TaskUseCase useCase;
@@ -143,9 +147,9 @@ public class TaskUseCaseTest {
     }
 
     @Test
-    void updateTaskSuccess(){
+    void updateTaskSuccess_WithoutNotification(){
         Task existingTask = TaskFactoryBot.createdTask();
-        Task updateTask = TaskFactoryBot.updatedTask();
+        Task updateTask = TaskFactoryBot.updatedTask(1L);
         Board board = existingTask.getBoard();
 
         when(port.findById(existingTask.getId())).thenReturn(Optional.of(existingTask));
@@ -159,8 +163,8 @@ public class TaskUseCaseTest {
         Task result = useCase.updateTask(existingTask.getId(), updateTask);
 
         assertNotNull(result);
-        assertEquals("Task Atualizada", result.getTitle());
-        assertEquals("Task para testes unitários", result.getDescription());
+        assertEquals(updateTask.getTitle(), result.getTitle());
+        assertEquals(updateTask.getDescription(), result.getDescription());
         assertEquals(TaskStatus.DONE, result.getStatus());
         assertEquals(board, result.getBoard());
         assertEquals(1L, result.getUserId());
@@ -168,15 +172,43 @@ public class TaskUseCaseTest {
         verify(port, times(1)).findById(existingTask.getId());
         verify(taskRules, times(1)).validateTaskRules(updateTask);
         verify(boardValidator, times(1)).validateBoardExists(updateTask.getBoard().getId());
+        verify(notificationPort, never()).notifyUser(any(Task.class));
         verify(port, times(1)).save(result);
-        verifyNoMoreInteractions(port);
-
+        verifyNoMoreInteractions(port, taskRules, boardValidator, notificationPort);
     }
+
+    @Test
+    void updateTaskSuccess_WithNotification(){
+        Task existingTask = TaskFactoryBot.createdTask();
+        Task updateTask = TaskFactoryBot.updatedTask(2L);
+        Board board = existingTask.getBoard();
+
+        when(port.findById(existingTask.getId())).thenReturn(Optional.of(existingTask));
+        when(boardValidator.validateBoardExists(updateTask.getBoard().getId())).thenReturn(board);
+        when(port.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Task result = useCase.updateTask(existingTask.getId(), updateTask);
+
+        assertNotNull(result);
+        assertEquals(updateTask.getTitle(), result.getTitle());
+        assertEquals(updateTask.getDescription(), result.getDescription());
+        assertEquals(TaskStatus.DONE, result.getStatus());
+        assertEquals(board, result.getBoard());
+        assertEquals(2L, result.getUserId());
+
+        verify(port, times(1)).findById(existingTask.getId());
+        verify(taskRules, times(1)).validateTaskRules(updateTask);
+        verify(boardValidator, times(1)).validateBoardExists(updateTask.getBoard().getId());
+        verify(notificationPort, times(1)).notifyUser(any(Task.class));
+        verify(port, times(1)).save(result);
+        verifyNoMoreInteractions(port, taskRules, boardValidator, notificationPort);
+    }
+
 
     @Test
     void updateTaskError_WhenTaskNotFound(){
         Task existingTask = TaskFactoryBot.createdTask();
-        Task updateTask = TaskFactoryBot.updatedTask();
+        Task updateTask = TaskFactoryBot.updatedTask(1L);
 
         when(port.findById(existingTask.getId())).thenReturn(Optional.empty());
 
@@ -214,8 +246,8 @@ public class TaskUseCaseTest {
     }
 
     @Test
-    void createTaskSuccess(){
-        Task task = TaskFactoryBot.createdTask();
+    void createTaskSuccess_WithoutNotification(){
+        Task task = TaskFactoryBot.createdTaskWithoutUser();
         Board board = task.getBoard();
 
         when(boardValidator.validateBoardExists(task.getBoard().getId())).thenReturn(board);
@@ -230,8 +262,33 @@ public class TaskUseCaseTest {
 
         verify(taskRules, times(1)).validateTaskRules(task);
         verify(boardValidator, times(1)).validateBoardExists(task.getBoard().getId());
-        verify(port, times(1)).save(result);
-        verifyNoMoreInteractions(port);
+        verify(notificationPort, never()).notifyUser(any(Task.class));
+        verify(port, times(1)).save(any(Task.class));
+        verifyNoMoreInteractions(port, notificationPort, boardValidator, taskRules);
+    }
+
+    @Test
+    void createTaskSuccess_WithNotification(){
+        Task task = TaskFactoryBot.createdTask();
+        Board board = task.getBoard();
+
+        when(boardValidator.validateBoardExists(task.getBoard().getId())).thenReturn(board);
+        when(port.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+         // Nao precisa de when pro notification porque ele retorna void.
+
+        Task result = useCase.createTaskWithBoard(task, board.getId());
+
+        assertNotNull(result);
+        assertNotNull(result.getBoard());
+        assertNotNull(result.getUserId());
+        assertEquals(board, result.getBoard());
+        assertEquals(task.getTitle(), result.getTitle());
+
+        verify(taskRules, times(1)).validateTaskRules(task);
+        verify(boardValidator, times(1)).validateBoardExists(task.getBoard().getId());
+        verify(notificationPort, times(1)).notifyUser(any(Task.class));
+        verify(port, times(1)).save(any(Task.class));
+        verifyNoMoreInteractions(port, notificationPort, boardValidator, taskRules);
     }
 
     @Test
@@ -317,7 +374,7 @@ public class TaskUseCaseTest {
 
         verify(boardValidator, times(1)).validateBoardExists(boardId);
         verify(port, times(1)).findAllTaskByBoard(boardId);
-        verifyNoMoreInteractions(port);
+        verifyNoMoreInteractions(port, boardValidator);
     }
 
     @Test
@@ -335,7 +392,7 @@ public class TaskUseCaseTest {
 
         verify(boardValidator, times(1)).validateBoardExists(boardId);
         verify(port, times(1)).findAllTaskByBoard(boardId);
-        verifyNoMoreInteractions(port);
+        verifyNoMoreInteractions(port, boardValidator);
     }
 
     @Test
@@ -348,7 +405,7 @@ public class TaskUseCaseTest {
 
         verify(boardValidator, times(1)).validateBoardExists(boardId);
         verify(port, never()).findAllTaskByBoard(boardId);
-        verifyNoMoreInteractions(port);
+        verifyNoMoreInteractions(port, boardValidator);
     }
 
     @Test
@@ -402,7 +459,7 @@ public class TaskUseCaseTest {
 
         verify(boardValidator, times(1)).validateBoardExists(boardId);
         verify(port, never()).findByBoardAndStatus(any(Long.class), any(TaskStatus.class));
-        verifyNoMoreInteractions(port);
+        verifyNoMoreInteractions(port, boardValidator);
 
     }
 
@@ -418,7 +475,7 @@ public class TaskUseCaseTest {
 
         verify(boardValidator, times(1)).validateBoardExists(boardId);
         verify(port, never()).findByBoardAndStatus(any(Long.class), any(TaskStatus.class));
-        verifyNoMoreInteractions(port);
+        verifyNoMoreInteractions(port, boardValidator);
     }
 
     @Test

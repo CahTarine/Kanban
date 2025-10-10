@@ -9,6 +9,7 @@ import java.util.Optional;
 import com.projeto.quadrokanban.core.domain.exception.InvalidDateFormatException;
 import com.projeto.quadrokanban.core.domain.exception.InvalidStatusException;
 import com.projeto.quadrokanban.core.domain.exception.TaskNotFoundException;
+import com.projeto.quadrokanban.core.port.output.NotificationOutputPort;
 import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
@@ -23,11 +24,13 @@ public class TaskUseCase implements TaskInputPort {
 	private final TaskOutputPort taskOutputPort;
 	private final BoardValidatorService boardValidatorService;
 	private final ValidateTaskRules validateTaskRules;
+    private final NotificationOutputPort notificationPort;
 	
-	public TaskUseCase (TaskOutputPort taskOutputPort, BoardValidatorService boardValidatorService, ValidateTaskRules validateTaskRules) {
+	public TaskUseCase (TaskOutputPort taskOutputPort, BoardValidatorService boardValidatorService, ValidateTaskRules validateTaskRules, NotificationOutputPort notificationPort) {
 		this.taskOutputPort = taskOutputPort;
 		this.boardValidatorService = boardValidatorService;
 		this.validateTaskRules = validateTaskRules;
+        this.notificationPort = notificationPort;
 	}
 	
 	
@@ -51,6 +54,8 @@ public class TaskUseCase implements TaskInputPort {
 		
 		Task existingTask = taskOutputPort.findById(id)
 				.orElseThrow(() -> new TaskNotFoundException("Task not found."));
+
+        Long oldUserId = existingTask.getUserId(); // Guarda o id do antigo user
 		
 		Board board = boardValidatorService.validateBoardExists(task.getBoard().getId());
 		
@@ -60,6 +65,9 @@ public class TaskUseCase implements TaskInputPort {
 		existingTask.setBoard(board);
 		existingTask.setDueDate(task.getDueDate());
 		existingTask.setUserId(task.getUserId());
+
+        if(task.getUserId() != null && !task.getUserId().equals(oldUserId)) // Se o id do update nao for nulo e for diferente do antigo, notifica o novo user.
+            notificationPort.notifyUser(existingTask);
 		
 	    return taskOutputPort.save(existingTask);
 	}
@@ -75,7 +83,13 @@ public class TaskUseCase implements TaskInputPort {
 			 
 	        Board board = boardValidatorService.validateBoardExists(id);
 	        task.setBoard(board);
-	        return taskOutputPort.save(task);
+
+            Task savedTask = taskOutputPort.save(task);
+
+            if(task.getUserId() != null)
+                notificationPort.notifyUser(savedTask);
+
+	        return savedTask;
 	}
 	 
 	 public List<Task> getByStatus(String status){
