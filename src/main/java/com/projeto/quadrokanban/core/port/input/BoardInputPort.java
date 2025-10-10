@@ -21,8 +21,6 @@ public interface BoardInputPort {
 	
 	void deleteBoard(Long id);
 	
-	boolean existsById(Long id);
-	
 	Optional<Long> countTasks(Long boardId);
 	
 	List<Board> getBoadsWithOverdueTasks();

@@ -3,6 +3,7 @@ package com.projeto.quadrokanban.adapter.input.controller;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,7 +27,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/users")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
-	
+
+    @Autowired
 	private UserInputPort userInputPort;
 	
 	public UserController(UserInputPort userInputPort) {
@@ -41,9 +43,7 @@ public class UserController {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<User> getUserById(@PathVariable Long id){
-		Optional<User> user = userInputPort.getUserById(id);
-		return user.map(ResponseEntity::ok)
-				.orElseGet(() -> ResponseEntity.notFound().build());
+		return ResponseEntity.ok(userInputPort.getUserById(id));
 	}
 	
 	@GetMapping("/name/{name}")
@@ -59,22 +59,13 @@ public class UserController {
 	// *******************
 	@PutMapping("/{id}")
 	public ResponseEntity<User> put(@Valid @RequestBody User userUpdates, @PathVariable Long id){
-             User updatedUser = userInputPort.updateUser(id, userUpdates);
-                
-            return ResponseEntity.ok(updatedUser);
+            return ResponseEntity.ok(userInputPort.updateUser(id, userUpdates));
 	}
 	
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void delete(@PathVariable Long id) {
-		Optional<User> user = userInputPort.getUserById(id);
-		
-		if(user.isEmpty())
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-		
-		userInputPort.deleteUser(id);
-	}
+	public void delete(@PathVariable Long id) {userInputPort.deleteUser(id);}
 	
 	
 

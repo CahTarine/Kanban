@@ -9,7 +9,7 @@ public interface UserInputPort {
 	
 	List<User> getAllUsers();
 
-	Optional<User> getUserById(Long id);
+	User getUserById(Long id);
 	
 	List<User> getUserByName(String name);
 	

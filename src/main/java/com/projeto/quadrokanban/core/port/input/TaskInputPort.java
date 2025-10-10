@@ -19,8 +19,6 @@ public interface TaskInputPort {
 	
 	void deleteTask(Long id);
 	
-	boolean existsById(Long id);
-	
 	Task createTaskWithBoard(Task task, Long id);
 	
 	List<Task> getByStatus(String status);

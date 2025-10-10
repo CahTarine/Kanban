@@ -1,5 +1,6 @@
 package com.projeto.quadrokanban.core.usecase;
 
+import com.projeto.quadrokanban.core.domain.exception.BoardNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
@@ -15,6 +16,6 @@ public class BoardValidatorService {
 
     public Board validateBoardExists(Long boardId) {
         return boardOutputPort.findById(boardId)
-            .orElseThrow(() -> new RuntimeException("Board does not exist"));
+            .orElseThrow(() -> new BoardNotFoundException("Board does not exist"));
     }
 }

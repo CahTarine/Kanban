@@ -3,6 +3,7 @@ package com.projeto.quadrokanban.core.usecase;
 import java.util.List;
 import java.util.Optional;
 
+import com.projeto.quadrokanban.core.domain.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.model.User;
@@ -15,20 +16,18 @@ public class UserUseCase implements UserInputPort{
 	private final UserOutputPort userOutputPort;
 	
 	public UserUseCase(UserOutputPort userOutputPort) {
-		this.userOutputPort = userOutputPort;
+
+        this.userOutputPort = userOutputPort;
 	}
 
-	public List<User> getAllUsers(){
-		return userOutputPort.findAllUsers();
+	public List<User> getAllUsers(){ return userOutputPort.findAllUsers();}
+	
+	public User getUserById(Long id){
+        return userOutputPort.findUserById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found."));
 	}
 	
-	public Optional<User> getUserById(Long id){
-		return userOutputPort.findUserById(id);
-	}
-	
-	public List<User> getUserByName(String name){
-		return userOutputPort.findUserByName(name);
-	}
+	public List<User> getUserByName(String name){ return userOutputPort.findUserByName(name);}
 	
 	public User createdUser(User user) {
 		return userOutputPort.savedUser(user);
@@ -36,12 +35,17 @@ public class UserUseCase implements UserInputPort{
 	
 	
 	public void deleteUser(Long id) {
-		userOutputPort.deleteUserById(id);
+        userOutputPort.findUserById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found."));
+        userOutputPort.deleteUserById(id);
 	}
 
 	public User updateUser(Long id, User user) {
-		user.setId(id);
-		return userOutputPort.savedUser(user);
+        User existingUser = userOutputPort.findUserById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found."));
+		existingUser.setName(user.getName());
+        existingUser.setEmail(user.getEmail());
+		return userOutputPort.savedUser(existingUser);
 	}
 
 }
