@@ -9,13 +9,15 @@ public class Board {
 	
 	private Long id;
 	private String name;
+    private BoardStatus status;
 	private List<Task> tasks = new ArrayList<>();
-	private BoardStatus status;
 	
 	
-	public Board(String name, List<Task> tasks) {
+	public Board(Long id, String name, BoardStatus status, List<Task> tasks) {
 		super();
+        this.id = id;
 		this.name = name;
+        this.status = status;
 		this.tasks = tasks;
 	}
 

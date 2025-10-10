@@ -43,9 +43,7 @@ public class TaskController {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Task> getById(@PathVariable Long id) {
-		Optional<Task> task = taskInputPort.getById(id);
-		return task.map(ResponseEntity::ok)
-				.orElseGet(() -> ResponseEntity.notFound().build());
+		return ResponseEntity.ok(taskInputPort.getById(id));
 	}
 	
 	@GetMapping("/title/{title}")
@@ -63,40 +61,20 @@ public class TaskController {
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Task> put(@PathVariable Long id, @Valid @RequestBody Task task) {
-	    try {
-	        Task updatedTask = taskInputPort.updateTask(id, task);
-	        return ResponseEntity.ok(updatedTask);
-	    } catch (RuntimeException e) {
-	        if (e.getMessage().contains("Not found")) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-	        } else if (e.getMessage().contains("Board does not exist")) {
-	            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-	        }
-	        throw e;
-	    }
+	        return ResponseEntity.ok(taskInputPort.updateTask(id, task));
 	}
 
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) //Define Http 204 como padrão se der tudo certo, este método não tem corpo.
 	public void delete(@PathVariable Long id) {
-		Optional<Task> task = taskInputPort.getById(id);
-		
-		if (task.isEmpty()) 
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND); // Throw new = diz para o Java parar a execução normal do programa e lançar uma exceção.
-		
 		taskInputPort.deleteTask(id);
 	}
 	
 	
 	@GetMapping("/status/{status}")
 	public ResponseEntity<List<Task>> getByStatus(@PathVariable String status){
-		try {
-	        TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
-	        return ResponseEntity.ok(taskInputPort.getByStatus(taskStatus));
-	    } catch (IllegalArgumentException e) {
-	        return ResponseEntity.badRequest().body(null); // Retorne um erro 400 se o status for inválido
-	    }
+	        return ResponseEntity.ok(taskInputPort.getByStatus(status));
 	}
 	
 	@GetMapping("/board/{boardId}")
@@ -106,12 +84,7 @@ public class TaskController {
 		
 	@GetMapping("/board-status/{boardId}/{status}")
 	public ResponseEntity<List<Task>> getByBoardIdAndStatus(@PathVariable Long boardId, @PathVariable String status){
-		try {
-			TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
-			return ResponseEntity.ok(taskInputPort.getByBoardAndStatus(boardId, taskStatus));
-		}  catch (IllegalArgumentException e) {
-	        return ResponseEntity.badRequest().body(null); // Retorna um erro 400 se o status for inválido
-	    }
+			return ResponseEntity.ok(taskInputPort.getByBoardAndStatus(boardId, status));
 	}
 	
 	@GetMapping("/last-task")
@@ -119,14 +92,8 @@ public class TaskController {
 		return ResponseEntity.ok(taskInputPort.getLastCreatedTask());
 	}
 	
-	@GetMapping("/duedate/{dueDateString}")
-	public ResponseEntity<List<Task>> getByDueDate(@PathVariable String dueDateString){
-		
-//		Define o formato que esperamos na URL
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//		Faz a conversão do formato esperado para o formato LocalDateTime
-		LocalDate dueDate = LocalDate.parse(dueDateString, formatter);
-		
+	@GetMapping("/duedate/{dueDate}")
+	public ResponseEntity<List<Task>> getByDueDate(@PathVariable String dueDate){
 		return ResponseEntity.ok(taskInputPort.getByDueDate(dueDate));
 	}
 }

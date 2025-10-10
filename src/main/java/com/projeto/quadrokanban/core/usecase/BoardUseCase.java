@@ -3,6 +3,8 @@ package com.projeto.quadrokanban.core.usecase;
 import java.util.List;
 import java.util.Optional;
 
+import com.projeto.quadrokanban.core.domain.exception.InvalidStatusException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.exception.BoardNotFoundException;
@@ -16,17 +18,20 @@ import com.projeto.quadrokanban.core.port.output.BoardOutputPort;
 public class BoardUseCase implements BoardInputPort{
 	
 	private final BoardOutputPort boardOutputPort;
-	
-	 public BoardUseCase(BoardOutputPort boardOutputPort) {
-	        this.boardOutputPort = boardOutputPort;
+    private final BoardValidatorService boardValidatorService;
+
+    public BoardUseCase(BoardOutputPort boardOutputPort, BoardValidatorService boardValidatorService) {
+         this.boardOutputPort = boardOutputPort;
+         this.boardValidatorService = boardValidatorService;
 	    }
 	 
 	 public List<Board> getAllBoards() {
 	        return boardOutputPort.findAll();
 	    }
 	 
-	 public Optional<Board> getById(Long id){
-		 return boardOutputPort.findById(id);
+	 public Board getById(Long id){
+		 return boardOutputPort.findById(id)
+                 .orElseThrow(() -> new BoardNotFoundException("Board not found."));
 	 }
 
 	 public List<Board> getByName(String name){
@@ -49,23 +54,31 @@ public class BoardUseCase implements BoardInputPort{
 	 }
 
 	    public void deleteBoard(Long id) {
-	        boardOutputPort.deleteById(id);
+	        boardOutputPort.findById(id)
+                            .orElseThrow(() -> new BoardNotFoundException("Board not found."));
+         boardOutputPort.deleteById(id);
 	    }
 	    
 	    public boolean existsById(Long id) {
 	        return boardOutputPort.findById(id).isPresent();
 	    }
-	    
+
 	    public Optional<Long> countTasks(Long boardId){
-	    	return boardOutputPort.countTasksByBoard(boardId);
+	    	boardValidatorService.validateBoardExists(boardId);
+         return boardOutputPort.countTasksByBoard(boardId);
 	    }
 	    
 	    public List<Board> getBoadsWithOverdueTasks(){
 	    	return boardOutputPort.findBoadsWithOverdueTasks();
 	    }
-	    
-	    public List<Board> getByStatus(BoardStatus status){
-	    	return boardOutputPort.findByStatus(status);
+
+	    public List<Board> getByStatus(String status){
+            try {
+                BoardStatus boardStatus = BoardStatus.valueOf(status.toUpperCase());
+                return boardOutputPort.findByStatus(boardStatus);
+            } catch (InvalidStatusException e) {
+                throw new InvalidStatusException("Invalid status.");
+            }
 	    }
 	    
 	    @Override

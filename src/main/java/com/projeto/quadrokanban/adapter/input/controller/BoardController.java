@@ -40,9 +40,7 @@ public class BoardController {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Board> getById(@PathVariable Long id) {
-		Optional<Board> board = boardInputPort.getById(id);
-		return board.map(ResponseEntity::ok)
-				.orElseGet(() -> ResponseEntity.notFound().build());
+		return ResponseEntity.ok(boardInputPort.getById(id));
 	}
 	
 	@GetMapping("/name/{name}")
@@ -57,31 +55,18 @@ public class BoardController {
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Board> put(@PathVariable Long id, @Valid @RequestBody Board board) {
-	    return boardInputPort.getById(id)
-	            .map(existingBoard -> {
-	            	existingBoard.setName(board.getName());
-                    existingBoard.setStatus(board.getStatus());
-	                Board updatedBoard = boardInputPort.updateBoard(id, existingBoard);
-	                return ResponseEntity.ok(updatedBoard);
-	            })
-	            .orElse(ResponseEntity.notFound().build());
+	    return ResponseEntity.ok(boardInputPort.updateBoard(id, board));
 	}
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete (@PathVariable Long id) {
-		Optional<Board> board = boardInputPort.getById(id);
-		
-		if(board.isEmpty())
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-		
 		boardInputPort.deleteBoard(id);
 	}
 	
 	@GetMapping("/task-counts/{boardId}")
-	public ResponseEntity<Long> countTasks(@PathVariable Long boardId){
-		Optional<Long> count = boardInputPort.countTasks(boardId);
-		return count.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.ok(0L));
+	public ResponseEntity<Optional<Long>> countTasks(@PathVariable Long boardId){
+		return ResponseEntity.ok(boardInputPort.countTasks(boardId));
 	}
 	
 	@GetMapping("/overdue")
@@ -91,23 +76,13 @@ public class BoardController {
 	
 	@GetMapping("/status/{status}")
 	public ResponseEntity<List<Board>> getByStatus(@PathVariable String status) {
-		try {
-			BoardStatus boardStatus = BoardStatus.valueOf(status.toUpperCase());
-		    return ResponseEntity.ok(boardInputPort.getByStatus(boardStatus));
-		} catch (IllegalArgumentException e) {
-	        return ResponseEntity.badRequest().body(null); // Retorne um erro 400 se o status for inválido
-	    }
+		    return ResponseEntity.ok(boardInputPort.getByStatus(status));
 		
 	}
 	
 	 @PostMapping("/{boardId}/finalize")
 	    public ResponseEntity<String> finalizedBoard(@PathVariable Long boardId) {
-	        try {
-	            boardInputPort.finalizedBoard(boardId);
 	            return ResponseEntity.ok("Board " + boardId + " completed successfully");
-	        } catch (IllegalStateException e) {
-	            return ResponseEntity.badRequest().body(e.getMessage());
-	        }
 	    }
 
 	

@@ -1,9 +1,14 @@
 package com.projeto.quadrokanban.core.usecase;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
+import com.projeto.quadrokanban.core.domain.exception.InvalidDateFormatException;
+import com.projeto.quadrokanban.core.domain.exception.InvalidStatusException;
+import com.projeto.quadrokanban.core.domain.exception.TaskNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
@@ -31,8 +36,9 @@ public class TaskUseCase implements TaskInputPort {
 		return taskOutputPort.findAll();
 	}
 
-	public Optional<Task> getById(Long id) {
-		return taskOutputPort.findById(id);
+	public Task getById(Long id) {
+		return taskOutputPort.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found."));
 	}
 	
 	public List<Task> getByTitle(String title) {
@@ -44,7 +50,7 @@ public class TaskUseCase implements TaskInputPort {
 		validateTaskRules.validateTaskRules(task);
 		
 		Task existingTask = taskOutputPort.findById(id)
-				.orElseThrow(() -> new RuntimeException("Task not found."));
+				.orElseThrow(() -> new TaskNotFoundException("Task not found."));
 		
 		Board board = boardValidatorService.validateBoardExists(task.getBoard().getId());
 		
@@ -59,7 +65,9 @@ public class TaskUseCase implements TaskInputPort {
 	}
 	
 	public void deleteTask(Long id) {
-		taskOutputPort.deleteById(id);
+		taskOutputPort.findById(id)
+                        .orElseThrow(() -> new TaskNotFoundException("Task not found."));
+        taskOutputPort.deleteById(id);
 	}
 	
 	public boolean existsById(Long id) {
@@ -74,24 +82,43 @@ public class TaskUseCase implements TaskInputPort {
 	        return taskOutputPort.save(task);
 	}
 	 
-	 public List<Task> getByStatus(TaskStatus status){
-		 return taskOutputPort.findAllByStatus(status);
+	 public List<Task> getByStatus(String status){
+         try {
+             TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
+             return taskOutputPort.findAllByStatus(taskStatus);
+         } catch (InvalidStatusException e) {
+             throw new InvalidStatusException("Invalid status.");
+         }
 	 }
 	 
 	 public List<Task> getTaskByBoard(Long boardId){
 		 return taskOutputPort.findAllTaskByBoard(boardId);
 	 }
 	 
-	 public List<Task> getByBoardAndStatus(Long boardId, TaskStatus status){
-		 return taskOutputPort.findByBoardAndStatus(boardId, status);
+	 public List<Task> getByBoardAndStatus(Long boardId, String status){
+         try {
+             TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
+             return taskOutputPort.findByBoardAndStatus(boardId, taskStatus);
+         }  catch (InvalidStatusException e) {
+             throw new InvalidStatusException("Invalid status.");
+         }
 	 }
 	 
 	 public Optional<Task> getLastCreatedTask(){
 		 return taskOutputPort.findLastCreatedTask();
 	 }
 	 
-	 public List<Task> getByDueDate(LocalDate dueDate){
-		 return taskOutputPort.findByDueDate(dueDate);
+	 public List<Task> getByDueDate(String dueDateString){
+        try{
+//          Define o formato que esperamos na URL
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//		    Faz a conversão do formato esperado para o formato LocalDateTime
+            LocalDate dueDate = LocalDate.parse(dueDateString, formatter);
+            return taskOutputPort.findByDueDate(dueDate);
+        } catch (DateTimeParseException e){
+            throw new InvalidDateFormatException("Invalid date format. Use yyyy-MM-dd.");
+        }
+
 	 }
 	 
 	 

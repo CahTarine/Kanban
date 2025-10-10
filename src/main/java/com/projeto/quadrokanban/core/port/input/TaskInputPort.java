@@ -11,7 +11,7 @@ public interface TaskInputPort {
 	
 	List<Task> getAll();
 	
-	Optional<Task> getById(Long id);
+	Task getById(Long id);
 	 
 	List<Task> getByTitle(String title);
 	
@@ -23,14 +23,14 @@ public interface TaskInputPort {
 	
 	Task createTaskWithBoard(Task task, Long id);
 	
-	List<Task> getByStatus(TaskStatus status);
+	List<Task> getByStatus(String status);
 	
 	List<Task> getTaskByBoard(Long boardId);
 	
-	List<Task> getByBoardAndStatus(Long boardId, TaskStatus status);
+	List<Task> getByBoardAndStatus(Long boardId, String status);
 	
 	Optional<Task> getLastCreatedTask();
 	
-	List<Task> getByDueDate(LocalDate dueDate);
+	List<Task> getByDueDate(String dueDate);
 
 }
