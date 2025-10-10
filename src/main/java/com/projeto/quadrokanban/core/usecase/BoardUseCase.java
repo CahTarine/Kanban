@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.projeto.quadrokanban.core.domain.exception.BoardNotFoundException;
+import com.projeto.quadrokanban.core.domain.exception.BoardValidationException;
 import com.projeto.quadrokanban.core.domain.model.Board;
 import com.projeto.quadrokanban.core.enums.BoardStatus;
 import com.projeto.quadrokanban.core.port.input.BoardInputPort;
@@ -35,12 +37,16 @@ public class BoardUseCase implements BoardInputPort{
 		 return boardOutputPort.save(board);
 	 }
 	 
-	 public Optional<Board> updateBoard(Long id, Board board) {
-	        return boardOutputPort.findById(id).map(existing -> {
-	            board.setId(id);
-	            return boardOutputPort.save(board);
-	        });
-	    }
+	 
+	 public Board updateBoard(Long id, Board boardUpdates) {
+	       Board existingBoard = boardOutputPort.findById(id)
+	    		   .orElseThrow(() -> new BoardNotFoundException("Board not found with ID: " + id));
+	       existingBoard.setName(boardUpdates.getName());
+	       existingBoard.setStatus(boardUpdates.getStatus());
+	       
+	       return boardOutputPort.save(existingBoard);
+	 
+	 }
 
 	    public void deleteBoard(Long id) {
 	        boardOutputPort.deleteById(id);
@@ -69,7 +75,7 @@ public class BoardUseCase implements BoardInputPort{
 	        if (allTasksDone) {
 	            boardOutputPort.updateBoardStatus(boardId, BoardStatus.COMPLETED);
 	        } else {
-	            throw new IllegalStateException("Cannot finalize board with pending tasks.");
+	            throw new BoardValidationException("Cannot finalize board with pending tasks.");
 	        }
 	    }
 }

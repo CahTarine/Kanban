@@ -21,11 +21,13 @@ public interface TaskOutputPort {
 	
 	List<Task> findAllByStatus(TaskStatus status);
 	
-	List<Task> findAllByBoard(Long boardId);
+	List<Task> findAllTaskByBoard(Long boardId);
 	
 	List<Task> findByBoardAndStatus(Long boardId, TaskStatus status);
 	
 	Optional<Task> findLastCreatedTask();
 	
 	List<Task> findByDueDate(LocalDate dueDate);
+	
+	Long countDoingTasksByUserId(Long userId);
 }

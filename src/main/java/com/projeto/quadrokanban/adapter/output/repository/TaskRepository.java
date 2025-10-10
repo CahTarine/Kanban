@@ -66,12 +66,12 @@ public class TaskRepository implements TaskOutputPort{
 	public Task save(Task task) {
 	    TaskEntity taskEntity = taskMapper.toEntity(task);
 	    // Call é usado para chamar Procedures e SELECT para Functions;
-	    String sql = "{? = call upsert_task(?, ?, ?, ?, ?, ?)}";
+	    String sql = "{? = call upsert_task(?, ?, ?, ?, ?, ?, ?)}";
 
 	    if (taskEntity.getId() == null) {
 //	    	INSERT
 //	        
-//	        Chamando a procedure para inserir um novo registro
+//	        Chamando a function para inserir um novo registro
 //	    	Statement é interface JDBC para comunicação com BD, usada para executar funções e procedures.
 	        jdbcTemplate.execute(sql, (CallableStatement cs) -> {
 //	            Prepara uma comunicação entre a aplicação e o banco de dados para que ele possa enviar de volta
@@ -96,6 +96,12 @@ public class TaskRepository implements TaskOutputPort{
 	                cs.setNull(7, Types.TIMESTAMP);
 	            }
 	            
+	            if (taskEntity.getUserId() == null) {
+	                cs.setNull(8, Types.BIGINT); // Define o valor como NULL para o banco
+	            } else {
+	                cs.setLong(8, taskEntity.getUserId());
+	            }
+	            
 	            cs.execute(); // Gatilho que inicia o trabalho da procedure.
 	            
 //	           Momento em que a API le o id que foi retornado e salva na entity para manter o objeto atualizado na memória
@@ -106,7 +112,7 @@ public class TaskRepository implements TaskOutputPort{
 	    } else {
 	        // UPDATE
 	        
-	        // Chamando a procedure para atualizar um registro existente
+	        // Chamando a function para atualizar um registro existente
 	        jdbcTemplate.execute(sql, (CallableStatement cs) -> {
 	        	cs.registerOutParameter(1, Types.BIGINT);
 	            cs.setLong(2, taskEntity.getId());
@@ -114,6 +120,24 @@ public class TaskRepository implements TaskOutputPort{
 	            cs.setString(4, taskEntity.getDescription());
 	            cs.setString(5, taskEntity.getStatus().name());
 	            cs.setLong(6, taskEntity.getBoardId());
+
+	            LocalDateTime localDateTime = taskEntity.getDueDate();
+
+	            if (localDateTime != null) {
+	                Timestamp timestamp = Timestamp.valueOf(localDateTime);
+	                
+	                cs.setTimestamp(7, timestamp);
+	            } else {
+	                cs.setNull(7, Types.TIMESTAMP);
+	            }
+	            
+	            
+	            
+	            if (taskEntity.getUserId() == null) {
+	                cs.setNull(8, Types.BIGINT); 
+	            } else {
+	                cs.setLong(8, taskEntity.getUserId());
+	            }
 	            
 	            cs.execute();
 	            return null; // Retorno do callback
@@ -148,7 +172,7 @@ public class TaskRepository implements TaskOutputPort{
 	}
 	
 	@Override
-	public List<Task> findAllByBoard(Long boardId){
+	public List<Task> findAllTaskByBoard(Long boardId){
 		String sql = "SELECT * FROM get_task_by_board(?)";
 		
 		return jdbcTemplate.query(sql, rowMapper, boardId)
@@ -182,6 +206,12 @@ public class TaskRepository implements TaskOutputPort{
 		
 		return jdbcTemplate.query(sql, rowMapper, startOfDay, endOfDay)
 				.stream().map(taskMapper::toDomain).collect(Collectors.toList());
+	}
+	
+	@Override
+	public Long countDoingTasksByUserId(Long userId) {
+		String sql = "SELECT * FROM count_doing_tasks_by_user(?)";
+		return jdbcTemplate.queryForObject(sql, Long.class, userId);
 	}
 
 	

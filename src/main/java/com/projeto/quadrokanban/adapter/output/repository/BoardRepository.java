@@ -1,8 +1,6 @@
 package com.projeto.quadrokanban.adapter.output.repository;
 
 import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
@@ -35,21 +33,21 @@ public class BoardRepository implements BoardOutputPort{
 	@Override
 //	Usar .query quando é um método de busca de dados (SELECT)
 	public List<Board> findAll() {
-		String sql = "SELECT * FROM get_all_boards()";
+		String sql = "SELECT * FROM board.get_all_boards()";
 		return jdbcTemplate.query(sql, rowMapper)
 				.stream().map(boardMapper::toDomain).collect(Collectors.toList());
 	}
 
 	@Override
 	public Optional<Board> findById(Long id) {
-		String sql = "SELECT * FROM get_board_by_id(?)";
+		String sql = "SELECT * FROM board.get_board_by_id(?)";
 		return jdbcTemplate.query(sql,rowMapper, id)
 				.stream().findFirst().map(boardMapper::toDomain);
 	}
 
 	@Override
 	public List<Board> findAllByNameContainingIgnoreCase(String name) {
-		String sql = "SELECT * FROM get_board_by_name(?)";
+		String sql = "SELECT * FROM board.get_board_by_name(?)";
 		return jdbcTemplate.query(sql, rowMapper, "%" + name + "%")
 		.stream().map(boardMapper::toDomain).collect(Collectors.toList());
 	}
@@ -59,7 +57,7 @@ public class BoardRepository implements BoardOutputPort{
 	public Board save(Board board) {
 		BoardEntity boardEntity = boardMapper.toEntity(board);
 		
-		String sql = "{? = call upsert_board(?, ?)}";
+		String sql = "{? = call board.upsert_board(?, ?)}";
 		
 		if (boardEntity.getId() == null) {
 			//Insert
@@ -102,7 +100,7 @@ public class BoardRepository implements BoardOutputPort{
 	
 	@Override
 	public Optional<Long> countTasksByBoard(Long boardId){
-		String sql = "SELECT * FROM count_tasks_by_board(?)";
+		String sql = "SELECT * FROM board.count_tasks_by_board(?)";
 		
 //		Tratamento de erro nulo.
 		try {
@@ -116,7 +114,7 @@ public class BoardRepository implements BoardOutputPort{
 	
 	@Override
 	public List<Board> findBoadsWithOverdueTasks(){
-		String sql = "SELECT * FROM get_boards_with_overdue_tasks()";
+		String sql = "SELECT * FROM board.get_boards_with_overdue_tasks()";
 		
 		return jdbcTemplate.query(sql, rowMapper)
 			.stream().map(boardMapper::toDomain).collect(Collectors.toList());
@@ -124,7 +122,7 @@ public class BoardRepository implements BoardOutputPort{
 	
 	@Override
 	public List<Board> findByStatus(BoardStatus status) {
-		String sql = "SELECT * FROM get_board_by_status(?)";
+		String sql = "SELECT * FROM board.get_board_by_status(?)";
 		
 		return jdbcTemplate.query(sql, rowMapper, status.name())
 				.stream().map(boardMapper::toDomain).collect(Collectors.toList());
@@ -133,7 +131,7 @@ public class BoardRepository implements BoardOutputPort{
 
 	@Override
     public Boolean areAllTasksDone(Long boardId) {
-        String sql = "SELECT check_if_board_is_complete(?)";
+        String sql = "SELECT board.check_if_board_is_complete(?)";
         return jdbcTemplate.queryForObject(sql, Boolean.class, boardId);
     }
 	

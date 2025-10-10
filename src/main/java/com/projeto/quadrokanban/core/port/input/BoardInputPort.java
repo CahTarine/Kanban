@@ -16,7 +16,7 @@ public interface BoardInputPort {
 	
 	Board createdBoard(Board board);
 	
-	Optional<Board> updateBoard(Long id, Board board);
+	Board updateBoard(Long id, Board board);
 	
 	void deleteBoard(Long id);
 	
