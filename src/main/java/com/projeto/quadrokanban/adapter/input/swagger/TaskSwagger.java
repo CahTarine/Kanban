@@ -1,4 +1,4 @@
-package com.projeto.quadrokanban.adapter.input;
+package com.projeto.quadrokanban.adapter.input.swagger;
 
 import com.projeto.quadrokanban.core.domain.model.Task;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +12,7 @@ import java.util.List;
 @Tag(name = "Task Controller", description = "Gerencia todas as operações de CRUD para Tasks.")
 public interface TaskSwagger {
 
-    @Operation(summary = "Lista todos as Tasks", description = "Retorna uma lista de todos as tasks registrados.")
+    @Operation(summary = "Lista todas as Tasks", description = "Retorna uma lista de todos as tasks registrados.")
     @GetMapping
     ResponseEntity<List<Task>> getAll();
 

@@ -3,6 +3,7 @@ package com.projeto.quadrokanban.adapter.input.controller;
 import java.util.List;
 import java.util.Optional;
 
+import com.projeto.quadrokanban.adapter.input.swagger.BoardSwagger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/board")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class BoardController {
+public class BoardController implements BoardSwagger {
 	
 	@Autowired
 	private BoardInputPort boardInputPort;

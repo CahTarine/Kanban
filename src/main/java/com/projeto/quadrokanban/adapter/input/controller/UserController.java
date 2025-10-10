@@ -2,6 +2,7 @@ package com.projeto.quadrokanban.adapter.input.controller;
 
 import java.util.List;
 
+import com.projeto.quadrokanban.adapter.input.swagger.UserSwagger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/users")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class UserController {
+public class UserController implements UserSwagger {
 
     @Autowired
 	private UserInputPort userInputPort;

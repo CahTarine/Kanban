@@ -1,10 +1,9 @@
 package com.projeto.quadrokanban.adapter.input.controller;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+import com.projeto.quadrokanban.adapter.input.swagger.TaskSwagger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,10 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Task;
-import com.projeto.quadrokanban.core.enums.TaskStatus;
 import com.projeto.quadrokanban.core.port.input.TaskInputPort;
 
 import jakarta.validation.Valid;
@@ -28,7 +25,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/task")
 @CrossOrigin(origins = "*", allowedHeaders = "*") //Anotação que libera o CORS, permitindo requisições de outras origens.
-public class TaskController {
+public class TaskController implements TaskSwagger {
 	
 	private TaskInputPort taskInputPort;
 	
