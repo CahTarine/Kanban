@@ -10,6 +10,8 @@ import com.projeto.quadrokanban.core.domain.exception.InvalidDateFormatException
 import com.projeto.quadrokanban.core.domain.exception.InvalidStatusException;
 import com.projeto.quadrokanban.core.domain.exception.TaskNotFoundException;
 import com.projeto.quadrokanban.core.port.output.NotificationOutputPort;
+import com.projeto.quadrokanban.util.validation.BoardValidatorService;
+import com.projeto.quadrokanban.util.validation.ValidateTaskRules;
 import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.model.Board;
@@ -117,7 +119,7 @@ public class TaskUseCase implements TaskInputPort {
 	 }
 	 
 	 public Optional<Task> getLastCreatedTask(){
-		 return taskOutputPort.findLastCreatedTask();
+         return taskOutputPort.findLastCreatedTask();
 	 }
 	 
 	 public List<Task> getByDueDate(String dueDateString){

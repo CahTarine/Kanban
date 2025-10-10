@@ -3,6 +3,7 @@ package com.projeto.quadrokanban.core.domain.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projeto.quadrokanban.core.enums.BoardStatus;
 
 public class Board {
@@ -10,7 +11,9 @@ public class Board {
 	private Long id;
 	private String name;
     private BoardStatus status;
-	private List<Task> tasks = new ArrayList<>();
+
+    @JsonIgnore
+    private List<Task> tasks = new ArrayList<>();
 	
 	
 	public Board(Long id, String name, BoardStatus status, List<Task> tasks) {

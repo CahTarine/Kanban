@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.projeto.quadrokanban.core.domain.exception.InvalidStatusException;
+import com.projeto.quadrokanban.util.validation.BoardValidatorService;
 import org.springframework.stereotype.Service;
 
 import com.projeto.quadrokanban.core.domain.exception.BoardValidationException;
