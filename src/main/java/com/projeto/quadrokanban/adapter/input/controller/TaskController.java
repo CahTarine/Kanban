@@ -3,6 +3,7 @@ package com.projeto.quadrokanban.adapter.input.controller;
 import java.util.List;
 import java.util.Optional;
 
+import com.projeto.quadrokanban.adapter.input.swagger.TaskSwagger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.projeto.quadrokanban.core.domain.model.Task;
 import com.projeto.quadrokanban.core.port.input.TaskInputPort;
@@ -24,8 +24,8 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/task")
-@CrossOrigin(origins = "*", allowedHeaders = "*") //Pesquisar
-public class TaskController {
+@CrossOrigin(origins = "*", allowedHeaders = "*") //Anotação que libera o CORS, permitindo requisições de outras origens.
+public class TaskController implements TaskSwagger {
 	
 	private TaskInputPort taskInputPort;
 	
@@ -40,9 +40,7 @@ public class TaskController {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Task> getById(@PathVariable Long id) {
-		Optional<Task> task = taskInputPort.getById(id);
-		return task.map(ResponseEntity::ok)
-				.orElseGet(() -> ResponseEntity.notFound().build());
+		return ResponseEntity.ok(taskInputPort.getById(id));
 	}
 	
 	@GetMapping("/title/{title}")
@@ -60,29 +58,42 @@ public class TaskController {
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Task> put(@PathVariable Long id, @Valid @RequestBody Task task) {
-	    try {
-	        Task updatedTask = taskInputPort.updateTask(id, task);
-	        return ResponseEntity.ok(updatedTask);
-	    } catch (RuntimeException e) {
-	        if (e.getMessage().contains("Not found")) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-	        } else if (e.getMessage().contains("Board does not exist")) {
-	            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-	        }
-	        throw e;
-	    }
+	        return ResponseEntity.ok(taskInputPort.updateTask(id, task));
 	}
 
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) //Define Http 204 como padrão se der tudo certo, este método não tem corpo.
 	public void delete(@PathVariable Long id) {
-		Optional<Task> task = taskInputPort.getById(id);
-		
-		if (task.isEmpty()) 
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND); // Throw new = diz para o Java parar a execução normal do programa e lançar uma exceção.
-		
 		taskInputPort.deleteTask(id);
 	}
 	
+	
+	@GetMapping("/status/{status}")
+	public ResponseEntity<List<Task>> getByStatus(@PathVariable String status){
+	        return ResponseEntity.ok(taskInputPort.getByStatus(status));
+	}
+	
+	@GetMapping("/board/{boardId}")
+	public ResponseEntity<List<Task>> getByBoard(@PathVariable Long boardId) {
+		return ResponseEntity.ok(taskInputPort.getTaskByBoard(boardId));
+	}
+		
+	@GetMapping("/board-status/{boardId}/{status}")
+	public ResponseEntity<List<Task>> getByBoardIdAndStatus(@PathVariable Long boardId, @PathVariable String status){
+			return ResponseEntity.ok(taskInputPort.getByBoardAndStatus(boardId, status));
+	}
+	
+	@GetMapping("/last-task")
+	public ResponseEntity<Task> getLastCreatedTask(){
+        Optional<Task> taskOptional = taskInputPort.getLastCreatedTask();
+        return taskOptional
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+	}
+	
+	@GetMapping("/duedate/{dueDate}")
+	public ResponseEntity<List<Task>> getByDueDate(@PathVariable String dueDate){
+		return ResponseEntity.ok(taskInputPort.getByDueDate(dueDate));
+	}
 }

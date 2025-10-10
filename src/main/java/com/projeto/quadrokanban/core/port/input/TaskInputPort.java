@@ -1,15 +1,17 @@
 package com.projeto.quadrokanban.core.port.input;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import com.projeto.quadrokanban.core.domain.model.Task;
+import com.projeto.quadrokanban.core.enums.TaskStatus;
 
 public interface TaskInputPort {
 	
 	List<Task> getAll();
 	
-	Optional<Task> getById(Long id);
+	Task getById(Long id);
 	 
 	List<Task> getByTitle(String title);
 	
@@ -17,8 +19,16 @@ public interface TaskInputPort {
 	
 	void deleteTask(Long id);
 	
-	boolean existsById(Long id);
-	
 	Task createTaskWithBoard(Task task, Long id);
+	
+	List<Task> getByStatus(String status);
+	
+	List<Task> getTaskByBoard(Long boardId);
+	
+	List<Task> getByBoardAndStatus(Long boardId, String status);
+	
+	Optional<Task> getLastCreatedTask();
+	
+	List<Task> getByDueDate(String dueDate);
 
 }
