@@ -42,7 +42,8 @@ Quadro de organização de tarefas criado com conceitos de **Arquitetura Hexagon
 | Linguagem | **Java** | 17 |
 | Framework | **Spring Boot** | 3.5.5 |
 | Gerenciador de Dependência | **Maven** | - |
-| Banco de Dados | **PostgreSQL** | - |
+| Banco de Dados | **PostgreSQL** (Hospedado via **Supabase**) | - |
+| Migrações | **Flyway** | - |
 | Persistência | **JDBCTemplate** | - |
 | Documentação | **Swagger (OpenAPI 3)** | 2.8.13 |
 | Mapeamento | **MapStruct** | 1.5.5.Final |
@@ -134,6 +135,9 @@ spring.datasource.username=seu_usuario
 spring.datasource.password=sua_senha
 spring.datasource.driver-class-name=org.postgresql.Driver
 ````
+
+**Nota:** O projeto utiliza Flyway para versionamento do banco de dados. Ao executar a aplicação, as tabelas, functions e procedures serão criadas automaticamente.
+
 <br/>
 
 ### 4. Execute a aplicação:
